@@ -1,0 +1,11 @@
+# Reference extension configuration file
+
+prefix: '%bolt.table_prefix%'
+
+# Mailer for use MailHog
+mailer:
+  user: ''
+  pwd: ''
+  host: '127.0.0.1'
+  port: '1025'
+  encryption: ''

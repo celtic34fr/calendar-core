@@ -1,0 +1,28 @@
+# An example of a services.yaml file in an extension
+
+doctrine:
+  orm:
+    auto_generate_proxy_classes: '%kernel.debug%'
+    naming_strategy: doctrine.orm.naming_strategy.underscore
+    auto_mapping: true
+    mappings:
+      Contact_Core:
+        is_bundle: false
+        type: attribute
+        dir: '%kernel.project_dir%/vendor/celtic34fr/contact-core/src/Entity'
+        prefix: 'Celtic34fr\CalendarCore'
+        alias: CalendarCore
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Celtic34fr\CalendarCore\AdminMenu:
+    class: Celtic34fr\CalendarCore\AdminMenu
+    arguments: [ '@Symfony\Component\Routing\Generator\UrlGeneratorInterface' ]
+    tags: [ 'bolt.extension_backend_menu' ]
+
+  Celtic34fr\CalendarCore\Controller\Backend\:
+    resource: '%kernel.project_dir%/vendor/celtic34fr/calendar-core/src/Controller/Backend/'
+    tags: ['controller.service_arguments']

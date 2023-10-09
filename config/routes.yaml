@@ -1,0 +1,5 @@
+
+reference_extension:
+  resource: '../../vendor/celtic34fr/calendar-core/src/Controller/Backend/'
+  prefix: '%bolt.backend_url%'
+  type: annotation
