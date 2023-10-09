@@ -12,7 +12,10 @@
   "require": {
     "php": ">=8.1",
     "bolt/core": "~5.1.0",
-    "twig/twig": "^2.12 | ^3.0"
+    "twig/twig": "^2.12 | ^3.0",
+    "symfony/form": "^5.4",
+    "nucleos/dompdf-bundle": "^3.1",
+    "teamtnt/tntsearch": "^3.1"
   },
   "require-dev": {
     "symplify/easy-coding-standard": "^8.3"
