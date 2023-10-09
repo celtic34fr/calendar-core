@@ -64,4 +64,3 @@ appveyor.yaml
 composer.lock
 var/
 vendor/*
-composer.lock
