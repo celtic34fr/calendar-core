@@ -1,4 +1,5 @@
-# Bolt CMS 4 Celtic34fr Calendar Extension Core v0.0.1-dev
+# calendar-core
+Bolt Cms Extension Calendar Integration base code
 
 Author: Gilbert ARMENGAUD
 
