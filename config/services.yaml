@@ -9,7 +9,7 @@ doctrine:
       Contact_Core:
         is_bundle: false
         type: attribute
-        dir: '%kernel.project_dir%/vendor/celtic34fr/contact-core/src/Entity'
+        dir: '%kernel.project_dir%/vendor/celtic34fr/calendar-core/src/Entity'
         prefix: 'Celtic34fr\CalendarCore'
         alias: CalendarCore
 
