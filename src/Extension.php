@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Celtic34fr\ContactCore;
+namespace Celtic34fr\CalendarCore;
 
 use Bolt\Extension\BaseExtension;
 use Symfony\Component\Filesystem\Filesystem;

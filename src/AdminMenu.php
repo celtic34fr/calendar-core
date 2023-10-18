@@ -1,6 +1,6 @@
 <?php
 
-namespace Celtic34fr\ContactCore;
+namespace Celtic34fr\CalendarCore;
 
 use Bolt\Menu\ExtensionBackendMenuInterface;
 use Knp\Menu\MenuItem;
