@@ -25,6 +25,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * tx_color     string      colouleur d'écriture d'affichage de l'événement dans un calendrier graphique
  * all_day      boolean     top indiquant si l'événement est sur une ou des journées entières (true) ou non (false)
  * calmendar    relation    calendrier de rattachement de l'événement, ManyToOne vers la table Calendar
+ * period       relation    périodicité de l'événement, ManyToOne vers table Paramter, clé d'accès 'SysCalPeriod'
+ * period_start datetime    date de début de la période de répétion de l'événement au format YYYY/MM/DD 
+ * period_end   datetime    date de fin de la période de répétion de l'événement au format YYYY/MM/DD
  */
 
 #[ORM\Entity(repositoryClass: CalEventRepository::class)]
@@ -84,7 +87,19 @@ class CalEvent
 
     #[ORM\ManyToOne(targetEntity: Calendar::class)]
     #[ORM\JoinColumn(name: 'calendar_id', referencedColumnName: 'id', nullable: false)]
-    private Calendar $calendar = null;
+    private Calendar $calendar;
+
+    #[ORM\ManyToOne(targetEntity: Parameter::class)]
+    #[ORM\JoinColumn(name: 'period_id', referencedColumnName: 'id', nullable: true)]
+    private ?Parameter $period = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private DateTime $period_start;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private DateTime $period_end;
 
     /**
      * @return integer|null
@@ -273,4 +288,60 @@ class CalEvent
         $this->calendar = $calendar;
         return $this;
     }
-}
+
+    /**
+     * @return DateTime
+     */
+    public function getPeriodStart(): DateTime
+    {
+        return $this->period_start;
+    }
+
+
+    /**
+     * @param DateTime $period_start
+     * @return CalEvent
+     */
+    public function setPeriodStart(DateTime $period_start): self
+    {
+        $this->period_start = $period_start;
+        return $this;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function getPeriodEnd(): DateTime
+    {
+        return $this->period_end;
+    }
+
+
+    /**
+     * @param DateTime $period_end
+     * @return CalEvent
+     */
+    public function setPeriodEnd(DateTime $period_end): self
+    {
+        $this->period_end = $period_end;
+        return $this;
+    }
+
+    /**
+     * @return Parameter|null
+     */
+    public function getPeriod(): ?Parameter
+    {
+        return $this->period;
+    }
+
+    /**
+     * @param Parameter $period
+     * @return CalEvent
+     */
+    public function setPeriod(Parameter $period): self
+    {
+        $this->period = $period;
+        return $this;
+    }
+    }

@@ -1,0 +1,228 @@
+{% extends "@calendar-core/events_layout.html.twig" %}
+{% import '@calendar-core/macros/form_type.html.twig' as fields %}
+{% import '@calendar-core/macros/form_classic.html.twig' as forms %}
+
+{% macro prototypeValues(valsChildren) %}
+	{% import '@calendar-core/macros/form_type.html.twig' as fields %}
+
+	{{ fields.field(valsChildren.cle, "", {
+        'class': 'col-12 my-1 mx-0 px-0', 'il_class': {'label': 'col-4', 'input': 'col-8'},
+        'dataset': {'ord': 0}
+    }) }}
+	{{ fields.field(valsChildren.fonction, "", {
+        'class': 'col-12 my-1 mx-0 px-0', 'il_class': {'label': 'col-4', 'input': 'col-8'},
+        'dataset': {'ord': 0}
+    }) }}
+	{{ fields.field(valsChildren.background, "", {
+        'class': 'col-3 mx-0 px-0', 'value': "#FFFFFF",
+        'dataset': {'ord': 0}
+    }) }}
+	{{ fields.field(valsChildren.border, "", {
+        'class': 'col-3 mx-0 px-0', 'value': "#FFFFFF",
+        'dataset': {'ord': 0}
+    }) }}
+	{{ fields.field(valsChildren.text, "", {
+        'class': 'col-3 mx-0 px-0', 'value': "#000000",
+        'dataset': {'ord': 0}
+    }) }}
+{% endmacro %}
+
+{% block shoulder %}
+	{{ 'Evènements dans le calendrier' }}
+{% endblock shoulder %}
+
+{% block title %}
+	<i class="fas mr-2 link--icon fa-clipboard-question"></i>
+	Gestion des types d'événements
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+{% endblock %}
+
+{% block main %}
+    <div class="col-12 row" id="entete">
+        {% if entete is defined and entete is not empty %}
+        <span class="col-2 offszt-1 text-end bg-secondary text-white">Liste :</span>
+        <span class="col-2 text-center">{{ entete.getCle() }}</span>
+        <span class="col-6 text-end">{{ entete.getValeur() }}</span>
+        {% endif %}
+    </div>
+
+    {% if errors is defined and errors is not empty %}
+        <div class="col-12 row m-2 p-0 border border-dark">
+            <h3 class="bg-danger col-12 m-0 p-1 text-white border-danger">
+                Erreurs détectées dans le formulaire
+            </h3>
+            <table class="col-12 row table-danger table-bordered table-stripped m-0 p-0">
+                <thead class="col-12 row m-0 p-0">
+                    <tr class="row col-12 m-0 p-0">
+                        <th class="col-2 text-center">Bloc n°</th>
+                        <th class="col-3 text-center">Champ</th>
+                        <th class="col-7 text-start">Erreur(s)</th>
+                    </tr>
+                </thead>
+                <tbody class="col-12 row m-0 p-0">
+            {% for occur, occurErrors in errors %}
+                {% for field, error in occurErrors %}
+                    <tr class="col-12 row m-0 p-0"></tr>
+                        <td class="col-12 m-0 p-0" colspan="3">
+                        <td class="col-2 text-center">{{ occur }}</td>
+                        <td class="col-3 text-center">{{ field }}</td>
+                        <td class="col-7 yexy-start">{{ error|raw }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    
+
+    {{ form_start(form, {'action': path('evt-type-gest'), 'method': 'POST'}) }}
+        {{ form_row(form._token) }}
+
+        <div class="col-12 row mx-0 px-0">
+            {{ form_label(form.items) }}
+            {{ form_errors(form.items) }}
+            <ul class="values col-12 row mx-0 px-0" 
+             data-index="{{ form.items.children|length > 0 ? (form.items.children|last).vars.name|parseInt + 1 : 0 }}"
+             data-prototype='{{ _self.prototypeValues(form.items.vars.prototype)|e('html_attr') }}'>
+                {% for idx, valueField in form.items %}
+                    <li class="col-12 row my-2 mx-0 px-0">
+                        {{ fields.field(valueField.children.cle, "", {
+                                'class': 'col-12 my-1 mx-0 px-0', 'il_class': {'label': 'col-4', 'input': 'col-8'},
+                                'dataset': {'ord': idx}
+                            }) }}
+                        {{ fields.field(valueField.children.fonction, "", {
+                                'class': 'col-12 my-1 mx-0 px-0', 'il_class': {'label': 'col-4', 'input': 'col-8'},
+                                'dataset': {'ord': idx}
+                            }) }}
+                        {{ fields.field(valueField.children.background, "", {
+                                'class': 'col-3 mx-0 px-0',
+                                'dataset': {'ord': idx}
+                            }) }}
+                        {{ fields.field(valueField.children.border, "", {
+                                'class': 'col-3 mx-0 px-0',
+                                'dataset': {'ord': idx}
+                            }) }}
+                        {{ fields.field(valueField.children.text, "", {
+                                'class': 'col-3 mx-0 px-0',
+                                'dataset': {'ord': idx}
+                            }) }}
+                    </li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="add_item_link btn btn-primary" data-collection-holder-class="values">
+                Ajouter une valeur
+            </button>
+        </div>
+
+        <div class="col-12 row mt-2 px-0 mx-0">
+            {{ forms.btn('record', "Enregistrer", {
+                    'class': 'col-4 offset-1 text-white gradient text-center btn btn-success',
+                }) }}
+            {{ forms.btn('canList', "Annuler l'opération", {
+                    'class': 'btn btn-bs-warning col-4 offset-2', 'bclass': 'btn btn-bs-warning',
+                    'formnovalidate': true, 'event': 'onClick', 'codeJS': 'backToDashboard()',
+                    'type': 'button',
+                } ) }}
+        </div>
+
+    {{ form_end(form, {render_rest: false}) }}
+    <div class="col-12 mt-2 text-right text-gray-600 px-0 mx-3">
+        * champs obligatoires
+    </div>
+{% endblock %} 
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+		function addTagFormDeleteLink(item, index) {
+			const removeFormButton = document.createElement('button');
+			removeFormButton.classList.add("btn");
+			removeFormButton.classList.add("btn-warning");
+			removeFormButton.classList.add("col-3");
+			removeFormButton.classList.add("mx-0");
+			removeFormButton.classList.add("px-0");
+			removeFormButton.setAttribute('title', 'Supprimer la valeur');
+			const removeFormIcon = document.createElement("i");
+			removeFormIcon.classList.add("fa");
+			removeFormIcon.classList.add("fa-trash");
+			removeFormButton.append(removeFormIcon);
+			if (index < 1) {
+				removeFormButton.disabled = true;
+			}
+			item.appendChild(removeFormButton);
+
+			removeFormButton.addEventListener('click', (e) => {
+				e.preventDefault();
+				let item = e.currentTarget.parentElement;
+                let list = item.parentElement;
+				let index = parseInt(item.querySelector("input").dataset.ord);
+				item.remove();
+
+                let spans = list.querySelectorAll("span");
+				spans.forEach(span => {
+					let idx = parseInt(span.innerHTML);
+
+					if (idx > index) {
+						let idxStr = idx.toString();
+						let nidxStr = (idx - 1).toString();
+						let input = span.parentElement.querySelector("input");
+						let iclone = input.cloneNode(1);
+
+                        span.innerHTML = nidxStr + " : ";
+						iclone.id = input.id.replace(idxStr, nidxStr);
+						iclone.name = input.name.replace(idxStr, nidxStr);
+						iclone.value = input.value;
+						iclone.dataset.ord = nidxStr;
+						input.remove();
+						span.after(iclone);
+					}
+				});
+			});
+		}
+
+		function addEmptyLi(bouton) {
+			const collectionHolder = document.querySelector('.' + bouton.dataset.collectionHolderClass);
+			const index = parseInt(collectionHolder.dataset.index);
+			const item = document.createElement('li');
+			item.classList.add("col-12");
+			item.classList.add("row");
+			item.classList.add("my-2");
+			item.classList.add("mx-0");
+			item.classList.add("px-0");
+			item.innerHTML = collectionHolder.dataset.prototype.replace(/__name__/g, index);
+			collectionHolder.appendChild(item);
+
+			collectionHolder.dataset.index ++;
+			addTagFormDeleteLink(item, index);
+		}
+
+        function backToDashboard() {
+            window.location.href = "{{ path('bolt_dashboard') }}";
+        }
+
+		document.addEventListener("DOMContentLoaded", function () {
+			document.querySelectorAll('.add_item_link').forEach(btn => {
+				btn.addEventListener("click", function (e) {
+					addEmptyLi(e.currentTarget);
+				});
+			});
+
+			document.querySelectorAll('ul.values li').forEach((val) => {
+				let input = val.querySelector("input");
+				let ord = parseInt(input.dataset.ord);
+				addTagFormDeleteLink(val, ord)
+			});
+
+			const bouton = document.querySelector(".add_item_link")
+			const valuesNBR = document.querySelectorAll("ul.values li");
+			if (valuesNBR.length < 1) {
+				addEmptyLi(bouton);
+			}
+		});
+    </script>
+{% endblock %} 
