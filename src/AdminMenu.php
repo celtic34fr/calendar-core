@@ -3,6 +3,8 @@
 namespace Celtic34fr\CalendarCore;
 
 use Bolt\Menu\ExtensionBackendMenuInterface;
+use Celtic34fr\CalendarCore\Menu\MenuItem as MenuItemCalTasks;
+use Celtic34fr\CalendarCore\Traits\AdminMenuTrait;
 use Knp\Menu\MenuItem;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -13,23 +15,24 @@ class AdminMenu implements ExtensionBackendMenuInterface
     {
     }
 
+    use AdminMenuTrait;
+
     public function addItems(MenuItem $menu): void
     {
-        /** @var MenuItemContacts $menuContact */
-        /**
-        list($menuBefore, $menuContacts, $menuAfter) = $this->extractsMenus($menu);
-        if (!$menuContacts->hasChild("Gestion des Contacts")) {
-            $menuContacts->addChild('Gestion des Contacts', [
+        /** @var MenuItemCalTasks $menuCalTasks */
+        list($menuBefore, $menuCalTasks, $menuAfter) = $this->extractsMenus($menu, 'CalTasks');
+        if (!$menuCalTasks->hasChild("Gestion des Calendriers et Taches")) {
+            $menuCalTasks->addChild('Gestion des Calendriers et Taches', [
                 'extras' => [
-                    'name' => 'Gestion des Contacts',
+                    'name' => 'Gestion des Calendriers et Taches',
                     'type' => 'separator',
-                    'group' => 'Contact',
+                    'group' => 'CalTasks',
                 ]
             ]);
         }
 
         $configurationItems = [];
-        if (!$menuContacts->hasChild("Paramètres")) {
+        if (!$menuCalTasks->hasChild("Paramètres")) {
             $configurationItems = [
                 "Paramètres" => [
                     'type' => 'menu',
@@ -38,7 +41,7 @@ class AdminMenu implements ExtensionBackendMenuInterface
                             'slug' => 'parametres',
                         ]),
                         'extras' => [
-                            'group' => 'Contact',
+                            'group' => 'CalTasks',
                             'name' => 'Paramètres',
                             'slug' => 'parametres',
                             'icon' => 'fa-tools'
@@ -47,30 +50,20 @@ class AdminMenu implements ExtensionBackendMenuInterface
                 ]
             ];
         }
-        $configurationItems['Mes Informations'] = [
+        $configurationItems['Types d\'événements'] = [
             'type' => 'smenu',
             'parent' => "Paramètres",
             'item' => [
-                'uri' => $this->urlGenerator->generate('parameters-info-structure'),
+                'uri' => $this->urlGenerator->generate('parameters-type-event'),
                 'extras' => [
-                    'icon' => 'fa-building',
-                    'group' => 'Contact',
+                    'icon' => 'fa-tools',
+                    'group' => 'CalTasks',
                 ]
             ]
         ];
-        $configurationItems['Mes Listes de Parameters'] = [
-            'type' => 'smenu',
-            'parent' => "Paramètres",
-            'item' => [
-                'uri' => $this->urlGenerator->generate('parameters-params-list'),
-                'extras' => [
-                    'icon' => 'fa-building',
-                    'group' => 'Contact',
-                ]
-            ]
-        ];
-        $menuContacts = $this->addMenu($configurationItems, $menuContacts);
+        $menuContacts = $this->addMenu($configurationItems, $menuCalTasks);
 
+        /*
         $utilitairesItems = [];
         if (!$menuContacts->hasChild("Utilitaires")) {
             $utilitairesItems = [
@@ -105,7 +98,6 @@ class AdminMenu implements ExtensionBackendMenuInterface
 
         $menu = $this->rebuildMenu($menu, $menuBefore, $menuContacts, $menuAfter);
 
-        /*
         if (!$menu->getChild("Gestion des Contacts")) {
             $menu->addChild('Gestion des Contacts', [
                 'extras' => [

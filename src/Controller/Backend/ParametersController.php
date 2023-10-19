@@ -16,7 +16,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
-class CalTypeController extends AbstractController
+#[Route('parameters', name: 'parameters-')]
+class ParametersController extends AbstractController
 {
     use UtilitiesTrait;
     use FormErrorsTrait;
@@ -34,7 +35,7 @@ class CalTypeController extends AbstractController
         $this->schemaManager = $em->getConnection()->getSchemaManager();
     }
 
-    #[Route('type_gest', name: 'type-gest')]
+    #[Route('type_event', name: 'type-event')]
     /** Gestion des types d'événements, rendez-vous : ajout - modification - suppression */
     public function eventTypeGest(Request $request)
     {
