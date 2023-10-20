@@ -6,7 +6,9 @@ use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\Form\CalEventItemsType;
 use Celtic34fr\CalendarCore\FormEntity\CalEventItem;
 use Celtic34fr\CalendarCore\FormEntity\CalEventItems;
+use Celtic34fr\CalendarCore\Repository\CalendarRepository;
 use Celtic34fr\CalendarCore\Repository\CalEventRepository;
+use Celtic34fr\CalendarCore\Repository\CalTypeRepository;
 use Celtic34fr\CalendarCore\Repository\ParameterRepository;
 use Celtic34fr\CalendarCore\Traits\FormErrorsTrait;
 use Celtic34fr\CalendarCore\Traits\UtilitiesTrait;
@@ -14,6 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Route;
 
 #[Route('parameters', name: 'parameters-')]
@@ -33,6 +36,24 @@ class ParametersController extends AbstractController
         private ParameterRepository $parameterRepo
     ) {
         $this->schemaManager = $em->getConnection()->getSchemaManager();
+    }
+
+    #[Route('/calendars', name: 'calendars')]
+    public function calendars(CalendarRepository $calendarRepo): Response
+    {
+        $calendars = $calendarRepo->findActiveCalendars();
+        return $this->render('parameters/calendars.html.twig', [
+            'calendars' => $calendars,
+        ]);
+    }
+
+    #[Route('/cal_types', name: 'cal-types')]
+    public function cal_types(CalTypeRepository $calTypeRepo): Response
+    {
+        $calTypes = $calTypeRepo->findAll();
+        return $this->render('parameters/cal-types.html.twig', [
+            'cal_types' => $calTypes,
+        ]);
     }
 
     #[Route('type_event', name: 'type-event')]

@@ -9,3 +9,11 @@ mailer:
   host: '127.0.0.1'
   port: '1025'
   encryption: ''
+
+# gestion des calendriers et de leur saisie
+calendar:
+  input_event: true
+
+# gestion des taches et de leur saisie
+task:
+  input_task: true
