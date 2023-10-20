@@ -2,29 +2,34 @@
 
 namespace Celtic34fr\CalendarCore;
 
+use Bolt\Entity\User;
 use Bolt\Menu\ExtensionBackendMenuInterface;
 use Celtic34fr\CalendarCore\Menu\MenuItem as MenuItemCalendar;
 use Celtic34fr\CalendarCore\Service\ConfigService;
 use Celtic34fr\CalendarCore\Traits\AdminMenuTrait;
 use Knp\Menu\MenuItem;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /** classe d'ajout des menu spécifiques pour le projet */
 class AdminMenu implements ExtensionBackendMenuInterface
 {
     private UrlGeneratorInterface $urlGenerator;
     private ConfigService $configService;
+    private User $currentUser;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator, ConfigService $configService) {
+    public function __construct(UrlGeneratorInterface $urlGenerator, ConfigService $configService,
+    TokenStorageInterface $tokenStorage) {
         $this→urlGenerator = $urlGenerator;
         $this->configService = $configService;
+        $this->currentUser = $tokenStorage->getToken()->getUser();
     }
 
     use AdminMenuTrait;
 
     public function addItems(MenuItem $menu): void
     {
-        dd($this->configService);
+        dd($this->configService, $this->currentUser);
 
         /** @var MenuItemCalendar $menuCalTasks */
         list($menuBefore, $menuCalTasks, $menuAfter) = $this->extractsMenus($menu, 'CalTasks');
