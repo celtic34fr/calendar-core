@@ -29,8 +29,6 @@ class AdminMenu implements ExtensionBackendMenuInterface
 
     public function addItems(MenuItem $menu): void
     {
-        dd($this->configService, $this->currentUser);
-
         /** @var MenuItemCalendar $menuCalTasks */
         list($menuBefore, $menuCalTasks, $menuAfter) = $this->extractsMenus($menu, 'CalTasks');
         if (!$menuCalTasks->hasChild("Gestion des Calendriers et Taches")) {
@@ -43,7 +41,6 @@ class AdminMenu implements ExtensionBackendMenuInterface
             ]);
         }
 
-        $configurationItems = [];
         $configurationItems = [
             "Les calendriers" => [
                 'type' => 'menu',
@@ -58,31 +55,33 @@ class AdminMenu implements ExtensionBackendMenuInterface
                         'icon' => 'fa-tools'
                     ]
                 ]
-            ]
-        ];
-        $configurationItems['Mes calendriers'] = [
-            'type' => 'smenu',
-            'parent' => "Les calendriers",
-            'item' => [
-                'uri' => $this->urlGenerator->generate('parameters-calendars'),
-                'extras' => [
-                    'icon' => 'fa-calendar',
-                    'group' => 'CalTasks',
+            ],
+            "Mes calendriers" => [
+                'type' => 'smenu',
+                'parent' => "Les calendriers",
+                'item' => [
+                    'uri' => $this->urlGenerator->generate('parameters-calendars'),
+                    'extras' => [
+                        'icon' => 'fa-calendar',
+                        'group' => 'CalTasks',
+                    ]
+                ]
+            ],
+            'Les types d\'événements' => [
+                'type' => 'smenu',
+                'parent' => "Les calendriers",
+                'item' => [
+                    'uri' => $this->urlGenerator->generate('parameters-type-event'),
+                    'extras' => [
+                        'icon' => 'fa-tools',
+                        'group' => 'CalTasks',
+                    ]
                 ]
             ]
         ];
-        $configurationItems['Les types d\'événements'] = [
-            'type' => 'smenu',
-            'parent' => "Les calendriers",
-            'item' => [
-                'uri' => $this->urlGenerator->generate('parameters-type-event'),
-                'extras' => [
-                    'icon' => 'fa-tools',
-                    'group' => 'CalTasks',
-                ]
-            ]
-        ];
-        $menuContacts = $this->addMenu($configurationItems, $menuCalTasks);
+        $menuCalTasks = $this->addMenu($configurationItems, $menuCalTasks);
 
+        /* 4/ recontruction de $menu avec $menuBefore, $menuContacts et $menuAfter */
+        $menu = $this->rebuildMenu($menu, $menuBefore, $menuCalTasks, $menuAfter);
     }
 }

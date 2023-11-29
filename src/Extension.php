@@ -15,7 +15,7 @@ class Extension extends BaseExtension
      */
     public function getName(): string
     {
-        return 'Bolt Celtic34fr Calendar Extension';
+        return 'Bolt Celtic34fr Calendar Task Extension';
     }
 
     /**
