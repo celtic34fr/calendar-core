@@ -128,7 +128,7 @@ class CalEvent
     #[Assert\Type('array')]
     private ?EventRepetition $frequence;
 
-    #[ORM\ManyToMany(targetEntity: Attendee::class)]
+    #[ORM\ManyToMany(targetEntity: Person::class)]
     #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: true)]
     #[ORM\JoinTable(name: 'event_attendees')]
     #[ORM\InverseJoinColumn(name: 'attendee_id', referencedColumnName: 'id')]
@@ -500,7 +500,7 @@ class CalEvent
 
     /**
      * get the Attendees of the Event
-     * @return Collection<int, Attendee>
+     * @return Collection<int, Person>
      */
     public function getAttendees(): Collection
     {
@@ -509,10 +509,10 @@ class CalEvent
 
     /**
      * add 1 attendee to the Attendees of the Event
-     * @param Attendee $attendee
+     * @param Person $attendee
      * @return CalEvent
      */
-    public function addAttendee(Attendee $attendee): self
+    public function addAttendee(Person $attendee): self
     {
         if (!$this->attendees->contains($attendee)) {
             $this->attendees->add($attendee);
@@ -522,10 +522,10 @@ class CalEvent
 
     /**
      * remove 1 attendee if exist in Attendees of the Event
-     * @param Attendee $attendee
+     * @param Person $attendee
      * @return CalEvent|bool
      */
-    public function removeAttendee(Attendee $attendee): mixed
+    public function removeAttendee(Person $attendee): mixed
     {
         if ($this->attendees->removeElement($attendee)) {
             return $this;

@@ -1,0 +1,19 @@
+voir de mettre en place une relation ManyToMany portant attribut :
+-> PARTSTAT  : status de participation de la personne désignée par le lien
+    (pour VEVENT, VTODO, VJOURNAL)
+        -> NEEDS-ACTION     : l'événement demande une action        (tous, par défaut)
+        -> ACCEPTED         : l'événement est accepté               (tous)
+        -> DECLINED         : l'événement est refusé                (tous)
+        -> TENTATIVE        : l'événement provisoirement accepté    (VEVENT, VTODO)
+        -> DELEGATED        : l'événement est délégué               (VEVENT, VTODO)
+        -> COMPLETED        : l'événement est terminé               (VTODO)
+        -> IN-PROCESS       : l'événement en cours de finalisation  (VTODO)
+-> ROLE     : rôle affecté à la personne désignée par le lien
+        -> CHAIR            : indique le gestionnaire du calendrier
+        -> REQ-PARTICIPANT  : indique que le participant doit être présent
+        -> OPT-PARTICIPANT  : indique que la particiapation de la personne est
+                                facultative
+        -> NON-PARTICIPANT  : indique le participant non présent devant être
+                                averti des suite de l'événement
+-> RSVP     : attente (true) réponse de la personne désignée par le lien 
+              ou non (false, valeur par défaut)
