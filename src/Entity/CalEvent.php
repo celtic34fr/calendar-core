@@ -2,9 +2,11 @@
 
 namespace Celtic34fr\CalendarCore\Entity;
 
+use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Enum\VisibiliteEnums;
+use Celtic34fr\CalendarCore\Model\EventAlarm;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
 use Celtic34fr\CalendarCore\Repository\CalEventRepository;
@@ -36,7 +38,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  * - visibilite     : visibilité de l'événement (CLASS dans la norme RFC) : Privé, Public ou Confidentiel en base
  * - location       : précisiot de l'emplacement ou se déroule l'événement (objet EventLocation)
  * - timezone       : chaîne de caractère précisant le fuseau hpraire de référence pour l'événement
+ * - frequence      : précise si renseigné, si lévénement doit êtrŒe répété et comment (RRULE componant)
  * - attendees      : participant à l'événement
+ * - organizer      : organisateur de l'événement
+ * - alarms         : défini et précise les alarmes paramétrées sur l'événement
  */
 class CalEvent
 {
@@ -128,18 +133,27 @@ class CalEvent
     #[Assert\Type('array')]
     private ?EventRepetition $frequence;
 
-    #[ORM\ManyToMany(targetEntity: Person::class)]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\ManyToMany(targetEntity: Attendee::class)]
+    #[ORM\JoinColumn(name: 'attendee_id', referencedColumnName: 'id', nullable: true)]
     #[ORM\JoinTable(name: 'event_attendees')]
-    #[ORM\InverseJoinColumn(name: 'attendee_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'event_id', referencedColumnName: 'id')]
     #[Assert\Type('string')]
     private ?Collection $attendees = null;
+
+    #[ORM\ManyToOne(targetEntity: Organizer::class)]
+    #[ORM\JoinColumn(name: 'organizer_id', referencedColumnName: 'id', nullable: true)]
+    private ?Organizer $organizer = null;
+
+    #[ORM\Column(type: Types::JSON, nullable:true)]
+    #[Assert\Type('array')]
+    private ?Collection $alarms;
 
     public function __construct()
     {
         $this->setStatus(StatusEnums::WaitResponse->_toString());
         $this->setVisibilite(VisibiliteEnums::Public->_toString());
         $this->attendees = new ArrayCollection();
+        $this->alarms = new ArrayCollection();
     }
 
     /**
@@ -500,7 +514,7 @@ class CalEvent
 
     /**
      * get the Attendees of the Event
-     * @return Collection<int, Person>
+     * @return Collection<int, Attendee>
      */
     public function getAttendees(): Collection
     {
@@ -509,10 +523,10 @@ class CalEvent
 
     /**
      * add 1 attendee to the Attendees of the Event
-     * @param Person $attendee
+     * @param Attendee $attendee
      * @return CalEvent
      */
-    public function addAttendee(Person $attendee): self
+    public function addAttendee(Attendee $attendee): self
     {
         if (!$this->attendees->contains($attendee)) {
             $this->attendees->add($attendee);
@@ -522,14 +536,91 @@ class CalEvent
 
     /**
      * remove 1 attendee if exist in Attendees of the Event
-     * @param Person $attendee
+     * @param Attendee $attendee
      * @return CalEvent|bool
      */
-    public function removeAttendee(Person $attendee): mixed
+    public function removeAttendee(Attendee $attendee): mixed
     {
         if ($this->attendees->removeElement($attendee)) {
             return $this;
         }
         return false;
+    }
+
+    /**
+     * Get the value of organizer
+     * @return Organizer
+     */
+    public function getOrganizer(): ?Organizer
+    {
+        return $this->organizer;
+    }
+
+    /**
+     * @return bool
+     */
+    public function emptyOrganizer(): bool
+    {
+        return empty($this->organizer);
+    }
+
+    /**
+     * Set the value of organizer
+     * @param Organizer $organizer
+     * @return self
+     */
+    public function setOrganizer(Organizer $organizer): self
+    {
+        $this->organizer = $organizer;
+        return $this;
+    }
+
+    /**
+     * Get the value of alarms
+     * get Persons, Contacts, Prospects, Customers
+     * @return Collection|EventAlarm[]|null
+     */
+    public function getAlarms(): ?Collection
+    {
+        return $this->alarms;
+    }
+
+    public function emptyAlarms()
+    {
+        return empty($this->alarms);
+    }
+
+    /**
+     * add one Alamr to the Event
+     * @param EventAlarm $alarm
+     * @return CalEvent
+     */
+    public function addAlarm(EventAlarm $alarm): self
+    {
+        if (!$this->alarms->contains($alarm)) {
+            $this->alarms[] = $alarm;
+        }
+        return $this;
+    }
+
+    /**
+     * remove one Alarm to the Event
+     * @param EventAlarm $alarm
+     * @return CalEvent
+     */
+    public function removeAlarm(EventAlarm $alarm): self
+    {
+        $this->alarms->removeElement($alarm);
+        return $this;
+    }
+
+    /**
+     * Set the value of alarms
+     */
+    public function setAlarms(?Collection $alarms): self
+    {
+        $this->alarms = $alarms;
+
+        return $this;
     }
 }

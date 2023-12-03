@@ -2,15 +2,18 @@
 
 namespace Celtic34fr\CalendarCore\Model;
 
+use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalEvent;
+use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\EntityRedefine\ParameterCalEvent;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
+use Celtic34fr\CalendarCore\Enum\VisibiliteEnums;
+use Celtic34fr\CalendarCore\Model\EventAlarm;
 use Celtic34fr\CalendarCore\Model\EventLocation;
+use Celtic34fr\CalendarCore\Model\EventRepetition;
 use Celtic34fr\ContactCore\Entity\Clientele;
 use Celtic34fr\ContactCore\Entity\CliInfos;
-use Celtic34fr\ContactCore\Enum\CustomerEnums;
-use Celtic34fr\ContactCore\Enum\VisibiliteEnums;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -40,6 +43,8 @@ class EventICS
     private EventLocation       $location;
     private string              $timezone;
     private ?EventRepetition    $frequence;
+    private ?Organizer          $organizer = null;
+    private ?Collection         $alarms = null;
 
     public function __construct(EntityManagerInterface $entityManager, CalEvent $calEvent = null)
     {
@@ -64,8 +69,10 @@ class EventICS
             $this->setUid($calEvent->getUid());
             $this->setLocation($calEvent->getLocation());
             /** affectation du fuseau horaire si DateStart ne l'a pas fait */
-            if (!$this->getTimezone()) $this->setTimezone($calEvent->getTimezone());
+            if (!$this->emptyTimezone()) $this->setTimezone($calEvent->getTimezone());
             $this->setFrequence($calEvent->getFrequence());
+            if (!$calEvent->emptyOrganizer()) $this->setOrganizer($calEvent->getOrganizer());
+            IF (!$calEvent->emptyAlarms()) $this->setAlarms($calEvent->getAlarms());
         }
     }
 
@@ -113,7 +120,7 @@ class EventICS
         }
         $this->setDateEnd($dtEnd);
         
-        if (!$this->getTimezone() && $globalTimezone) $this->setTimezone($globalTimezone);
+        if ($this->emptyTimezone() && $globalTimezone) $this->setTimezone($globalTimezone);
 
         $attendees = array_key_exists('ATTENDEE', $calArray) ? $calArray['ATTENDEE'] : [];
         if ($attendees) {
@@ -125,6 +132,37 @@ class EventICS
 
         /* -> détermination du type d'événement par jour ou sur durée en fonction de DTSTART */
         $this->setAllday((int) $dtStart->format("His") == 0);
+
+        /** -> intégration de la règle de répétition si présente */
+        $rrule = array_key_exists('RRULE', $calArray) ? $calArray['RRULE'] : [];
+        if ($rrule) {
+            $rruleItem = new EventRepetition();
+            $rruleItem->setPeriod($rrule["FREQ"]);
+            if (array_key_exists("INTERVAL", $rrule)) $rruleItem->setInterval((int) $rrule["INTERVAL"]);
+            if (array_key_exists("COUNT", $rrule)) $rruleItem->setCount($rrule["COUNT"]);
+            if (array_key_exists("WKST", $rrule)) $rruleItem->setWeekStartDay($rrule["WKST"]);
+
+            /** integration of BY* componant */
+            if (array_key_exists("BYSECOND", $rrule)) $rruleItem->setByFreqSecond($rrule["BYSECOND"]);
+            if (array_key_exists("BYMINUTE", $rrule)) $rruleItem->setByFreqMinute($rrule["BYMINUTE"]);
+            if (array_key_exists("BYHOUR", $rrule)) $rruleItem->setByFreqHour($rrule["BYHOUR"]);
+            if (array_key_exists("BYDAY", $rrule)) $rruleItem->setByFreqDay($rrule["BYDAY"]);
+            if (array_key_exists("BYMONTHDAY", $rrule)) $rruleItem->setByFreqMonthDay($rrule["BYMONTHDAY"]);
+            if (array_key_exists("BYYEARDAY", $rrule)) $rruleItem->setByFreqYearDay($rrule["BYYEARDAY"]);
+            if (array_key_exists("BYWEEKNO", $rrule)) $rruleItem->setByFreqWeekNo($rrule["BYWEEKNO"]);
+            if (array_key_exists("BYMONTH", $rrule)) $rruleItem->setByFreqMonth($rrule["BYMONTH"]);
+            if (array_key_exists("BYSETPOS", $rrule)) $rruleItem->setByFreqSetPos($rrule["BYSETPOS"]);
+            $this->setFrequence($rruleItem);
+        }
+
+        if (array_key_exists("ORGANIZER", $calArray)) $this->setOrganizer($calArray['Organizer']);
+
+        if (array_key_exists("VALARM", $calArray)) {
+            foreach ($$calArray["VALARM"] as $valarm) {
+                $alarm = new EventAlarm($valarm);
+                $this->addAlarm($alarm);
+            }
+        }
 
         return $this;
     }
@@ -144,13 +182,19 @@ class EventICS
         $calEvent->setTxColor($this->getTxColor());
         $calEvent->setAllday($this->isAllday());
         $calEvent->setStatus($this->getStatus());
-        foreach ($this->getattendees() as $attendee) {
+        foreach ($this->getAttendees() as $attendee) {
             $calEvent->addAttendee($attendee);
         }
         $calEvent->setUid($this->getUid());
         $calEvent->setLocation($this->getLocation());
         $calEvent->setTimezone($this->getTimezone());
         $calEvent->setFrequence($this->getFrequence());
+        if (!$this->emptyOrganizer()) $calEvent->setOrganizer($this->getOrganizer());
+        if (!$this->emptyAlarms()) {
+            foreach ($this->getAlarms() as $alarm) {
+                $calEvent->addAlarm($alarm);
+            }
+        }
         return $calEvent;
     }
 
@@ -175,13 +219,13 @@ class EventICS
             $created_at = $created_at['VALUE'];
             $created_at = $this->extractDateMutable($created_at, $fuseau);
         } elseif (is_string($created_at)) {
-            $dateStart = $this->extractDateMutable($created_at, $this->getFuseauHoraire());
+            $dateStart = $this->extractDateMutable($created_at, $this->getTimezone());
         } elseif (!is_a($created_at, 'DateTime')) {
             return false;
         }
         $this->created_at = $created_at;
-        if (empty($this->getDateStart()) && !empty($created_at->getTimezone())) {
-            $this->setFuseauHoraire($created_at->getTimezone());
+        if ($this->emptyDateStart() && !empty($created_at->getTimezone())) {
+            $this->setTimezone($created_at->getTimezone());
         }
         return $this;
     }
@@ -193,6 +237,11 @@ class EventICS
     public function getLastupdatedAt(): DateTime
     {
         return $this->lastupdated_at;
+    }
+
+    public function emptyLastupdatedAt(): bool
+    {
+        return empty($this->lastupdated_at);
     }
 
     /**
@@ -207,13 +256,13 @@ class EventICS
             $lastupdated_at = $lastupdated_at['VALUE'];
             $lastupdated_at = $this->extractDateMutable($lastupdated_at, $fuseau);
         } elseif (is_string($lastupdated_at)) {
-            $dateStart = $this->extractDateMutable($lastupdated_at, $this->getFuseauHoraire());
+            $dateStart = $this->extractDateMutable($lastupdated_at, $this->getTimezone());
         } elseif (!is_a($lastupdated_at, 'DateTime')) {
             return false;
         }
         $this->lastupdated_at = $lastupdated_at;
-        if (empty($this->getLastupdatedAt()) && !empty($lastupdated_at->getTimezone())) {
-            $this->setFuseauHoraire($lastupdated_at->getTimezone());
+        if ($this->emptyDateStart() && !empty($lastupdated_at->getTimezone())) {
+            $this->setTimezone($lastupdated_at->getTimezone());
         }
         return $this;
     }
@@ -225,6 +274,11 @@ class EventICS
     public function getDateStart(): DateTime
     {
         return $this->dateStart;
+    }
+
+    public function emptyDateStart(): bool
+    {
+        return empty($this->dateStart);        
     }
 
     /**
@@ -245,7 +299,7 @@ class EventICS
         }
         $this->dateStart = $dateStart;
         if (!empty($dateStart->getTimezone())) {
-            $this->setFuseauHoraire($dateStart->getTimezone());
+            $this->setTimezone($dateStart->getTimezone());
         }
         return $this;
     }
@@ -271,13 +325,13 @@ class EventICS
             $dateEnd = $dateEnd['VALUE'];
             $dateEnd = $this->extractDateMutable($dateEnd, $fuseau);
         } elseif (is_string($dateEnd)) {
-            $dateEnd = $this->extractDateMutable($dateEnd, $this->getFuseauHoraire());
+            $dateEnd = $this->extractDateMutable($dateEnd, $this->getTimezone());
         } elseif (!is_a($dateEnd, 'DateTime')) {
             return false;
         }
         $this->dateEnd = $dateEnd;
-        if (empty($this->getDateStart()) && !empty($dateEnd->getTimezone())) {
-            $this->setFuseauHoraire($dateEnd->getTimezone());
+        if ($this->emptyDateStart() && !empty($dateEnd->getTimezone())) {
+            $this->setTimezone($dateEnd->getTimezone());
         }
        return $this;
     }
@@ -456,7 +510,7 @@ class EventICS
 
     /**
      * get the Persons concerned by the Event
-     * @return Collection|CliInfos[]|null
+     * @return Collection<int, Attendee>
      */
     public function getattendees(): ?Collection
     {
@@ -465,45 +519,25 @@ class EventICS
 
     /**
      * add one Person concerned by the Event
-     * @param CliInfos $attendee
+     * @param Attendee $attendee
      * @return CalendarICS
      */
-    public function addattendee(CliInfos $attendee)
+    public function addattendee(Attendee $attendee)
     {
-        if (!$this->attendee->contains($attendee)) {
-            $this->attendee[] = $attendee;
+        if (!$this->attendees->contains($attendee)) {
+            $this->attendees[] = $attendee;
         }
         return $this;
     }
 
     /**
      * remove one Person concerned by the Event
-     * @param CliInfos $attendee
+     * @param Attendee $attendee
      * @return CalendarICS
      */
-    public function removeattendee(CliInfos $attendee)
+    public function removeattendee(Attendee $attendee)
     {
-        $this->attendee->removeElement($attendee);
-        return $this;
-    }
-
-    /**
-     * get the Repport of Event (table CompteRendu)
-     * @return CompteRendu
-     */
-    public function getCompteRendu(): CompteRendu
-    {
-        return $this->compte_rendu;
-    }
-
-    /**
-     * set the Repport of Event (table CompteRendu)
-     * @param CompteRendu|null $compte_rendu
-     * @return CalendarICS
-     */
-    public function setCompteRendu(?CompteRendu $compte_rendu): self
-    {
-        $this->compte_rendu = $compte_rendu;
+        $this->attendees->removeElement($attendee);
         return $this;
     }
 
@@ -580,6 +614,14 @@ class EventICS
     }
 
     /**
+     * @return bool
+     */
+    public function emptyTimezone(): bool
+    {
+        return empty($this->timezone);
+    }
+
+    /**
      * set Timezone for all Dates of the Event
      * @param string $timezone
      * @return CalendarICS
@@ -646,7 +688,7 @@ class EventICS
         return $dateTime;
     }
 
-    private function formatAttendee(array $attendee): CliInfos
+    private function formatAttendee(array $attendee): Attendee
     {
         $attendee = new CliInfos;
 
@@ -746,5 +788,81 @@ class EventICS
             return $this;
         }
         return false;
+    }
+
+    /**
+     * Get the value of organizer
+     * @return Organizer|null
+     */
+    public function getOrganizer(): ?Organizer
+    {
+        return $this->organizer;
+    }
+
+    /**
+     * @return bool
+     */
+    public function emptyOrganizer(): bool
+    {
+        return empty($this->organizer);
+    }
+    /**
+     * Set the value of organizer
+     * @param Organizer $organizer
+     * @return EventICS
+     */
+    public function setOrganizer(Organizer $organizer): self
+    {
+        $this->organizer = $organizer;
+        return $this;
+    }
+
+    /**
+     * Get the value of alarms
+     * get Persons, Contacts, Prospects, Customers
+     * @return Collection|EventAlarm[]|null
+     */
+    public function getAlarms(): ?Collection
+    {
+        return $this->alarms;
+    }
+
+    public function emptyAlarms()
+    {
+        return empty($this->alarms);
+    }
+
+    /**
+     * add one Alamr to the Event
+     * @param EventAlarm $alarm
+     * @return CalEvent
+     */
+    public function addAlarm(EventAlarm $alarm): self
+    {
+        if (!$this->alarms->contains($alarm)) {
+            $this->alarms[] = $alarm;
+        }
+        return $this;
+    }
+
+    /**
+     * remove one Alarm to the Event
+     * @param EventAlarm $alarm
+     * @return CalEvent
+     */
+    public function removeAlarm(EventAlarm $alarm): self
+    {
+        $this->alarms->removeElement($alarm);
+        return $this;
+    }
+
+    /**
+     * Set the value of alarms
+     */
+    public function setAlarms(?Collection $alarms): self
+    {
+        $this->alarms = $alarms;
+
+        return $this;
     }
 }

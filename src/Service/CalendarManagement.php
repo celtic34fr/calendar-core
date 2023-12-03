@@ -2,6 +2,7 @@
 
 namespace Celtic34fr\CalendarCore\Service;
 
+use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalEvent;
 use Celtic34fr\CalendarCore\Model\EventICS;
 use Celtic34fr\CalendarCore\Model\EventLocation;
@@ -50,7 +51,7 @@ class CalendarManagement
                     $eventICS->setDetails(array_key_exists('DESCRIPTION', $event) ? $event['DESCRIPTION'] : null);
                     $eventICS->setStatus(array_key_exists('STATUS', $event) ? $event['STATUS'] : "NEEDS-ACTION");
                    
-                    $eventICS->setFuseauHoraire($globalFuseau);
+                    $eventICS->setTimezone($globalFuseau);
                     $eventICS->setDateStart($event['DTSTART']);
                     $eventICS->setDateEnd($event['DTEND']);
                     $eventICS->setCreatedAt($event['CREATED']);
@@ -65,55 +66,32 @@ class CalendarManagement
                     $attendees = array_key_exists('ATTENDEE', $event) ? $event['ATTENDEE'] : [];
                     if ($attendees) {
                         foreach($attendees as $invite) {
-                            $calAttendee = $this->entityManager->getRepository(Clientele::class)
-                                ->findOneBy(['courriel' => $invite['MAILTO']]);
+                            $calAttendee = $this->entityManager->getRepository(Attendee::class)
+                                ->findOneBy(['email' => $invite['MAILTO']]);
                             if (!$calAttendee && array_key_exists('CN', $invite) && !empty($invite['CN'])) 
-                                $calAttendee = $this->entityManager->getRepository(CliInfos::class)
-                                    ->findFullname($invite['CN']);
+                                $calAttendee = $this->entityManager->getRepository(Attendee::class)
+                                    ->findOneBy(["fullaname" => $invite['CN']]);
 
-                            // si la personne désignée n'existe pas dans CliInfo/Clientele : création en prospect
+                            // si la personne désignée n'existe pas dans Attendee : création
                             if (!$calAttendee) {
-                                $clientele = new Clientele();
-                                $clientele->setCourriel($invite['MAILTO']);
-                                $clientele->setType(CustomerEnums::Prospect->_toString());
-                                $this->entityManager->persist($clientele);
+                                $attendee = new Attendee();
+                                $attendee->setEmail($invite['MAILTO']);
+                                $attendee->setFullname($invite["CN"]);
 
-                                $calAttendee = new CliInfos();
-                                $calAttendee->setClient($clientele);
-                                if (!array_key_exists('CN', $invite) || empty($invite['CN'])) {
-                                    $calAttendee->setNom(uniqid("Prospect"));
-                                } else {
-                                    $names = explode(' ', $invite['CN']);
-                                    if (empty($names[0])) {
-                                        $calAttendee->setNom(uniqid("Prospect"));
-                                    } else {
-                                        $calAttendee->setNom($names[0]);
-                                        $calAttendee->setPrenom($names[1]);
-                                    }
-                                }
-                                $this->entityManager->persist($calAttendee);
-                                $clientele->addCliInfos($calAttendee);                                
-                            } else { // la personne existe => on a trouvé son email.
-                                if ($calAttendee instanceof CliInfos) {
-                                    $calAttendee = $calAttendee->getClient();
-                                } else {
-                                    /** @var Clientele $calAttendee */
-                                    if (!$calAttendee->isCliInfo(['fullname' => $invite['CN']])) {
-                                        $cliInfo = new CliInfos();
-                                        $cliInfo->setClient($calAttendee);
-                                        $names = explode(' ', $invite['CN']);
-                                        if (empty($names[0])) {
-                                            $cliInfo->setNom(uniqid("Prospect"));
-                                        } else {
-                                            $cliInfo->setNom($names[0]);
-                                            $cliInfo->setPrenom($names[1]);
-                                        }
-                                        $this->entityManager->persist($cliInfo);
-                                        $calAttendee->addCliInfos($cliInfo);
-                                    }
-                                }
+                                if (array_key_exists("CUTYPE", $invite)) $attendee->setCuType($invite["CUTYPE"]);
+                                if (array_key_exists("MEMBER", $invite)) $attendee->setMember($invite["MEMBER"]);
+                                if (array_key_exists("ROLE", $invite)) $attendee->setRole($invite["ROLE"]);
+                                if (array_key_exists("PARTSTAT", $invite)) $attendee->setPartStat($invite["PARTSTAT"]);
+                                if (array_key_exists("RSVP", $invite)) $attendee->setRsvp($invite["RSVP"]);
+                                if (array_key_exists("DELAGATETO", $invite)) $attendee->setDelegatedTo($invite["DELEGATETO"]);
+                                if (array_key_exists("DELEGATEFROM", $invite)) $attendee->setDelegatedFrom($invite["DELEGATEFROM"]);
+                                if (array_key_exists("SENDBY", $invite)) $attendee->setSendBy($invite["SENDBY"]);
+                                if (array_key_exists("DIR", $invite)) $attendee->setDir($invite["DIR"]);
+                                if (array_key_exists("LANGUAGE", $invite)) $attendee->setLanguage($invite["LANGUAGE"]);
+
+                                $this->entityManager->persist($attendee);
                             }
-                            $eventICS->addInvite($calAttendee);
+                            $eventICS->addattendee($attendee);
                         }
                     }
                     if (array_key_exists('RRULE', $event)) {

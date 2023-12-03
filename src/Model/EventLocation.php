@@ -10,9 +10,14 @@ class EventLocation
 
     public function __construct(array $tabLocation = null)
     {
-        $this->location = array_key_exists('LOCATION', $tabLocation) ? $tabLocation['LOCATION'] : null;
-        $this->latitude = array_key_exists('LATITUDE', $tabLocation) ? $tabLocation['LATITUDE'] : null;
-        $this->longitude = array_key_exists('LONGITUDE', $tabLocation) ? $tabLocation['LONGITUDE'] : null;
+        if ($tabLocation) $this->setByArray($tabLocation);
+    }
+
+    public function setByArray(array $location)
+    {
+        $this->location = array_key_exists('LOCATION', $location) ? $location['LOCATION'] : null;
+        $this->latitude = array_key_exists('LATITUDE', $location) ? $location['LATITUDE'] : null;
+        $this->longitude = array_key_exists('LONGITUDE', $location) ? $location['LONGITUDE'] : null;
     }
 
     /**
