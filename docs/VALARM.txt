@@ -1,0 +1,23 @@
+un événement peut contenir plusieurs alamres, donc blocs VALARM.
+
+alarme audio :
+    ACTION, TRIGGER obligatoire
+    DURATION, REPEAT, ATTACH facultatif
+alarme affichée:
+    ACTION, DESCRIPTION, TRIGGER obligatoire
+    DURATION, REPEAT facultatif
+alarme par courriel:
+    ACTION, DESCRIPTION, TRIGGER, SUMMARY, ATTENDEE obligatoire
+    DURATION, REPEAT facultatif
+
+-> qque soit le type d'alarme ACTION et TRIGGER doivent être présents
+-> ACTION déterminera le contenu de l'alarme
+    valeurs : AUDIO (alarme audio), DISPLAY (alarme affichée) et EMAIL (alarme par courriel)
+-> TRIGGER contient la règle de déclenchement de l'alarme, et peut avoir plusieurs formes :
+    -> une durée en valeur direct, positive ou négative, au format DateTimeInterval ex PT5M
+    -> une date et heure au format ssaammddThhmmssZ directement ou précédé par VALUE=DATE-TIME:
+    -> RELATED précide la durée relative à partir de laquelle déclencher l'alarme.
+        on le fait suivre de =END:duration 
+-> DURATION précise l'intervale entre 2 déclenchement d'alarme au format DateTimeInterval ex PT5M
+-> REPEAT donne le nombre de répétition de l'alarme
+-> ATTACH précise au besoin de le fichier audio à jouer pour l'alarme

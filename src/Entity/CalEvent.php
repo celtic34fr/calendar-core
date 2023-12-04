@@ -150,7 +150,7 @@ class CalEvent
 
     public function __construct()
     {
-        $this->setStatus(StatusEnums::WaitResponse->_toString());
+        $this->setStatus(StatusEnums::NeedsAction->_toString());
         $this->setVisibilite(VisibiliteEnums::Public->_toString());
         $this->attendees = new ArrayCollection();
         $this->alarms = new ArrayCollection();
@@ -403,7 +403,7 @@ class CalEvent
      */
     public function setStatus(string $status): mixed
     {
-        if (StatusEnums::isValid($status)) {
+        if (StatusEnums::isValidVevent($status)) {
             $this->status = $status;
             return $this;
         }

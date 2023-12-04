@@ -501,7 +501,7 @@ class EventICS
      */
     public function setStatus(string $status): mixed
     {
-        if (StatusEnums::isValid($status)) {
+        if (StatusEnums::isValidVevent($status)) {
             $this->status = $status;
             return $this;
         }

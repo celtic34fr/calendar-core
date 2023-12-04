@@ -1,0 +1,159 @@
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+
+obligatoire FREQ en premier pour définir le mode de répétition
+valeurs possibles :
+- SECONDLY, pour spécifier des événements répétitifs basés sur un intervalle d'une seconde ou plus
+- MINUTELY, pour spécifier des événements répétitifs basés sur un intervalle d'une minute ou plus
+- HOURLY, pour spécifier des événements répétitifs basés sur un intervalle d'une heure ou plus
+- DAILY, pour spécifier des événements répétitifs en fonction d'un intervalle d'un jour ou plus
+- WEEKLY, pour spécifier des événements répétitifs en fonction d'un intervalle d'une semaine ou plus
+- MONTHLY, pour spécifier des événements répétitifs en fonction d'un intervalle d'un mois ou plus
+- YEARLY, pour spécifier des événements répétitifs sur la base d'un intervalle d'un an ou plus
+
+INTERVAL
+pour spécifier des événements répétitifs basés sur un intervalle d'un an ou plus, entier positif représentant à
+quels intervalles la règle de récurrence se répète. La valeur par défaut est "1", signifiant chaque seconde pour
+une règle SECONDLY, chaque minute pour une Règle MINUTELY, toutes les heures pour une règle HOURLY, tous les jours
+pour une Règle DAYLY, chaque semaine pour une règle WEEKLY, chaque mois pour une Règle MONTHLY, et chaque année
+pour une règle YEARLY. Par exemple, dans une règle DAYLY, une valeur de « 8 » signifie tous les huit jours.
+
+UNTIL:DATE/DATE-TIME
+valeur : date qui limite la règle de récurrence de manière inclusive. Si la valeur spécifié par UNTIL est synchronisé
+avec la récurrence spécifiée, cette DATE ou DATE-TIME devient la dernière instance du récurrence.
+La valeur de la partie de règle UNTIL doit avoir la même type de valeur comme propriété "DTSTART".
+Dans le cas des sous-composants "STANDARD" et "DAYLIGHT" le UNTIL de la partie de règle DOIT toujours être spécifiée
+comme une date avec l'heure UTC. Si spécifié comme valeur DATE-TIME, alors il DOIT être spécifié dans un UTC format
+de l'heure. S'il n'est pas présent, et que la partie de règle COUNT n'est pas non plus présente, la « RRULE » est
+considérée comme se répétant indéfiniment.
+
+COUNT
+la partie règle définit le nombre d'occurrences auquel la récurrence est limitée à la plage. La valeur de la propriété
+"DTSTART" toujours compte comme la première occurrence.
+
+BYSECOND
+la partie règle spécifie une liste de secondes séparées par des virgules dans une minute. Les valeurs valides sont
+comprises entre 0 et 60.
+
+BYMINUTE
+la partie règle spécifie une liste de minutes séparées par des virgules dans une heure. Les valeurs valides sont
+comprises entre 0 et 59.
+
+BYHOUR
+la partie règle spécifie une liste d'heures de la journée séparées par des virgules. Les valeurs valides sont comprises
+entre 0 et 23.
+
+Les parties de règle BYSECOND, BYMINUTE et BYHOUR NE DOIVENT PAS être spécifiées lorsque la propriété "DTSTART" associée
+a un type de valeur DATE.
+Ces parties de règles DOIVENT être ignorées dans la valeur RECUR qui viole l'exigence ci-dessus (par exemple, générées
+par des applications antérieures à cette révision d'iCalendar).
+
+BYDAY
+la partie règle spécifie une liste de jours de la semaine séparés par des virgules ; SU indique dimanche ; MO indique
+lundi ; TU indique mardi ; WE indique mercredi; TH indique jeudi ; FR indique vendredi ; et SA indique samedi.
+Chaque valeur BYDAY peut également être précédée d'un entier positif (+n) ou négatif (-n). S'il est présent, cela indique
+la nième occurrence d'un jour spécifique dans la "RRULE" MONTHLY ou YEARLY.
+Par exemple, dans une règle MONTHLY, +1MO (ou simplement 1MO) représente le premier lundi du mois, tandis que -1MO représente
+le dernier lundi du mois. La valeur numérique dans une partie de règle BYDAY avec la partie de règle FREQ définie sur YEARLY
+correspond à un décalage dans le mois où la partie de règle BYMONTH est présente, et correspond à un décalage dans l'année où
+les parties de règle BYWEEKNO ou BYMONTH sont présentes. Si un modificateur entier n'est pas présent, cela signifie tous les
+jours de ce type dans la fréquence spécifiée. Par exemple, dans une règle MONTHLY, MO représente tous les lundis du mois. La
+partie de règle BYDAY NE DOIT PAS être spécifiée avec une valeur numérique lorsque la partie de règle FREQ n'est pas définie
+sur MONTHLY ou YEARLY. De plus, la partie de règle BYDAY NE DOIT PAS être spécifiée avec une valeur numérique avec la partie
+de règle FREQ définie sur YEARLY lorsque la partie de règle BYWEEKNO est spécifiée.
+
+BYMONTHDAY
+la partie règle spécifie une liste de jours du mois séparés par des virgules. Les valeurs valides sont 1 à 31 ou -31 à -1.
+Par exemple, -10 représente le dixième avant le dernier jour du mois.
+La partie de règle BYMONTHDAY NE DOIT PAS être spécifiée lorsque la partie de règle FREQ est définie sur WEEKLY.
+
+BYYEARDAY
+la partie règle spécifie une liste de jours de l'année séparés par des virgules. Les valeurs valides sont comprises entre 1 et
+366 ou entre -366 et -1. Par exemple, -1 représente le dernier jour de l'année (le 31 décembre) et -306 représente le 306e
+avant le dernier jour de l'année (le 1er mars). La partie de règle BYYEARDAY NE DOIT PAS être spécifiée lorsque la partie de
+règle FREQ est définie sur DAILY, WEEKLY ou MONTHLY.
+
+BYWEEKNO
+la partie règle spécifie une liste d'ordinaux séparés par des virgules spécifiant les semaines de l'année. Les valeurs valides
+sont comprises entre 1 et 53 ou entre -53 et -1. Cela correspond aux semaines selon la numérotation des semaines telle que
+définie dans [ISO.8601.2004]. Une semaine est définie comme une période de sept jours, commençant le jour de la semaine défini
+comme étant le début de la semaine (voir WKST). La première semaine de l'année civile est la première semaine qui contient au
+moins quatre (4) jours dans cette année civile. Cette partie de règle NE DOIT PAS être utilisée lorsque la partie de règle FREQ
+est définie sur autre chose que YEARLY. Par exemple, 3 représente la troisième semaine de l'année.
+        Remarque : en supposant que la semaine commence le lundi, la semaine 53 ne peut se produire que lorsque le jeudi est
+        le 1er janvier ou s'il s'agit d'une année bissextile et que le mercredi est le 1er janvier.
+
+BYMONTH
+La partie règle spécifie une liste de mois de l'année séparés par des virgules. Les valeurs valides sont comprises entre 1 et 12.
+
+WKST
+la partie règle spécifie le jour auquel la semaine de travail commence.
+Les valeurs valides sont MO, TU, WE, TH, FR, SA et SU. Ceci est significatif lorsqu'une "RRULE" WEEKLY a un intervalle supérieur
+à 1 et qu'une partie de règle BYDAY est spécifiée. Ceci est également important dans une "RRULE" TEARLY lorsqu'une partie de règle
+BYWEEKNO est spécifiée. La valeur par défaut est MO.
+
+BYSETPOS
+La partie règle spécifie une liste de valeurs séparées par des virgules qui correspond à la nième occurrence dans l'ensemble
+d'instances de récurrence spécifiées par la règle. BYSETPOS opère sur un ensemble d'instances de récurrence dans un intervalle de
+la règle de récurrence. Par exemple, dans une règle WEEKLY, l'intervalle serait d'une semaine. Un ensemble d'instances de récurrence
+commence au début de l'intervalle défini par la partie de règle FREQ. Les valeurs valides sont comprises entre 1 et 366 ou entre
+-366 et -1. Il DOIT uniquement être utilisé conjointement avec une autre partie de règle BYxxx. Par exemple, « le dernier jour ouvrable
+du mois » pourrait être représenté comme suit :
+    FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
+Chaque valeur BYSETPOS peut inclure un entier positif (+n) ou négatif (-n). S'il est présent, cela indique la nième occurrence de
+l'occurrence spécifique dans l'ensemble d'occurrences spécifié par la règle.
+       
+Les règles de récurrence peuvent générer des instances de récurrence avec une date non valide (par exemple, le 30 février) ou une heure
+locale inexistante (par exemple, 01h30 un jour où l'heure locale est avancée d'une heure à 01h00). De telles instances de récurrence
+DOIVENT être ignorées et NE DOIVENT PAS être comptées comme faisant partie de l'ensemble de récurrence.
+
+Si plusieurs parties de règle BYxxx sont spécifiées, après avoir évalué les parties de règle FREQ et INTERVAL spécifiées, les parties de
+règle BYxxx sont appliquées à l'ensemble actuel d'occurrences évaluées dans l'ordre suivant : BYMONTH, BYWEEKNO, BYYEARDAY, BYMONTHDAY,
+BYDAY, BYHOUR, BYMINUTE. , BYSECOND et BYSETPOS ; puis COUNT et JUSQU'À sont évalués.
+
+Le tableau ci-dessous résume la dépendance du comportement d'extension ou de limitation de la partie de règle BYxxx sur la valeur de la
+partie de règle FREQ.
+
+Le terme « N/A » signifie que la partie de règle BYxxx correspondante NE DOIT PAS être utilisée avec la valeur FREQ correspondante.
+
+BYDAY a un comportement spécial en fonction de la valeur FREQ et ceci est décrit dans des notes séparées sous le tableau.
+
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |          |SECONDLY|MINUTELY|HOURLY |DAILY  |WEEKLY|MONTHLY|YEARLY|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYMONTH   |Limit   |Limit   |Limit  |Limit  |Limit |Limit  |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYWEEKNO  |N/A     |N/A     |N/A    |N/A    |N/A   |N/A    |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYYEARDAY |Limit   |Limit   |Limit  |N/A    |N/A   |N/A    |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYMONTHDAY|Limit   |Limit   |Limit  |Limit  |N/A   |Expand |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYDAY     |Limit   |Limit   |Limit  |Limit  |Expand|Note 1 |Note 2|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYHOUR    |Limit   |Limit   |Limit  |Expand |Expand|Expand |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYMINUTE  |Limit   |Limit   |Expand |Expand |Expand|Expand |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYSECOND  |Limit   |Expand  |Expand |Expand |Expand|Expand |Expand|
+   +----------+--------+--------+-------+-------+------+-------+------+
+   |BYSETPOS  |Limit   |Limit   |Limit  |Limit  |Limit |Limit  |Limit |
+   +----------+--------+--------+-------+-------+------+-------+------+
+
+      Note 1: Limite si BYMONTHDAY est présent ; sinon, extension spéciale pour MONTHLY.
+
+      Note 2:  Limite si BYYEARDAY ou BYMONTHDAY est présent ; sinon,
+               extension spéciale pour WEEKLY si BYWEEKNO est présent ; sinon,
+               extension spéciale pour MONTHLY si BYMONTH est présent ; sinon,
+               extension spéciale pour YEARLY.
+
+Voici un exemple d’évaluation de plusieurs parties de règle BYxxx.
+    DTSTART;TZID=Amérique/New_York:19970105T083000
+    RRULE:FREQ=YEARLY;INTERVAL=2;BYMONTH=1;BYDAY=SU;BYHOUR=8,9;BYMINUTE=30
+Premièrement, "INTERVAL=2" serait appliqué à "FREQ=YEARLY" pour arriver à "tous les deux ans". Ensuite, « BYMONTH=1 » serait appliqué
+pour arriver à « chaque janvier, tous les deux ans ». Ensuite, "BYDAY=SU" serait appliqué pour arriver à "tous les dimanches de
+janvier, tous les deux ans". Ensuite, "BYHOUR=8,9" serait appliqué pour arriver à chaque dimanche de janvier à 8h et 9h, tous les deux
+ans".
+Ensuite, "BYMINUTE=30" serait appliqué pour arriver à "tous les dimanches de janvier à 8h30 et 9h30, tous les deux ans". Ensuite,
+faute d'informations de "RRULE", la seconde est dérivée de "DTSTART", pour aboutir à "tous les dimanches de janvier à 8h30 et 9h30,
+tous les deux ans". De même, si la partie de règle BYMINUTE, BYHOUR, BYDAY, BYMONTHDAY ou BYMONTH était manquante, la minute, l'heure,
+le jour ou le mois approprié aurait été récupéré de la propriété « DTSTART ».
