@@ -4,6 +4,7 @@ namespace Celtic34fr\CalendarCore\Repository;
 
 use Celtic34fr\CalendarCore\Entity\CalEvent;
 use Celtic34fr\CalendarCore\Entity\Parameter;
+use Celtic34fr\CalendarCore\Enum\EventEnums;
 use Celtic34fr\CalendarCore\Traits\DbPaginateTrait;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

@@ -107,6 +107,13 @@ class CalendarManagement
                 }
             }
             $this->entityManager->flush();
+
+            $tasks = $calArray['VTODO'] ?? [];
+
+            $journals = $calArray['VJOUNAL'] ?? [];
+
+            $freesbusies = $calArray['VFREEBUSY'] ?? [];
+
             return true;
         }
         return false;

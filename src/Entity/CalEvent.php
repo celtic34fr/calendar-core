@@ -105,7 +105,7 @@ class CalEvent
     #[Assert\Type('boolean')]
     private bool $all_day = false;
 
-    #[ORM\Column(type: Types::TEXT, length: 4, nullable:false)]
+    #[ORM\Column(type: Types::TEXT, length: 64, nullable:false)]
     #[Assert\Type('string')]
     private string $status;
 

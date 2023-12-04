@@ -1,0 +1,49 @@
+DTSTAMP et UID sont nécessaires
+champs optionnels mais présents qu'une fois:
+ CLASS, COMPLETED, CREATED, DESCRIPTION, DTSTART, GEO, LAST-MOD, LOCATION, ORGANIZER, PERCENT,
+ PRIORITY, RECUDID, SEQ, STATUS, SUMMARY, URL
+RRULE possible une fois
+DUE ou DURATION
+champs optionnels mais présents plus d'une fois possible :
+ ATTACH,  ATTENDEE, CATEGORIES, COMMENT, CONTACT, EXDATE, RSTATUS, RELATED, RESOURCES, RDATE, 
+
+UID                 : string
+DTSTAMP             : date au format ssaammjjThhmmssZ
+
+CLASS               : string in [PUBLIC (default), PRIVATE, CONFIDENTIAL]
+COMPLETED           : date au format ssaammjjThhmmssZ
+CREATED             : date au format ssaammjjThhmmssZ
+DESCRIPTION         : string
+DTSTART             : date au format ssaammjjThhmmssZ
+GEO                 : Latidude, longitude => part of EventLocation object
+LAST-MODIFIED       : date au format ssaammjjThhmmssZ
+LOCATION            : string describe location => part of EventLocation object
+ORGANIZER           : Cf. VEVENT => entity Organizer
+PERCENT-COMPLETE    : Integer 0 to 100
+PRIORITY            : Integer 0 to 9
+RECURRENCE-ID       : structure possible
+    ->VALUE=ssaammjj/ssaammjjThhmmssZ
+    ->TZID Cf. VTIMEZONE or DTSTART in VEVENT
+    ->RANGE=THISANDFUTURE[:ssaammjjThhmmssZ]
+SEQUENCE            : Integer, 0 at the creation of the componant, increment by revision of the componant
+STATUS              : Cf. VEVENT
+SUMMARY             : string
+URL                 : string - URI location resource
+
+RRULE               : Cf. VEVENT
+DUE                 : chaîne caractères DUE;VALUE=DATE:ssaammjj
+DURATION            :
+
+ATTACH              : string (analyse todo)
+ATTENDEE            : Cf. VEVENT array of ATTENDEE => entity Attendee
+CATEGORIES          : chaîne caractère : champ valeur séparé par des virgules
+COMMENT             : string
+CONTACT             : Once => entity Contact
+EXDATE              : list of exception dates - string - values separate by coma (possible TZID param)
+REQUEST-STATUS      : structure
+    -> statCode format 9.9, 1.x : Preliminary success, 2.x : SuccessFull, 3.x : Client Error, 4.x : Scheduling Error
+    -> statDesc string describute statCode
+    -> extData string (analyse todo) (facultative)
+RELATED-TO          : string
+RESOURCES           : string or list of string separate by comma
+RDATA               : string or list of string separate by comma representing date (ssaammjjThhmmssZ) TSID componant possible
