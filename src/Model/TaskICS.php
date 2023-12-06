@@ -17,34 +17,39 @@ class TaskICS
 {
     private EntityManagerInterface $entityManager;
 
-    private string $uid;
-    private DateTime $dtStamp;
+    private string              $uid;                   // *
+    private DateTime            $dtStamp;               // *
 
-    private ?array $classes = null;
-    private ?DateTime $completed = null;
-    private ?DateTime $created = null;
-    private ?string $description = null;
-    private ?DateTime $dtStart = null;
-    private ?EventLocation $location = null;
-    private ?DateTime $lastModified = null;
-    private ?Organizer $organizer = null;
-    private int $percentComplete = 0;
-    private int $priority = 0;
-    private ?TaskRecurrenceId $recurrenceId = null; // TODO gest structure
-    private int $sequence = 0;
-    private string $status;
-    private ?string $summary = null;
+    private ?array              $classes = null;        // *
+    private ?DateTime           $completed = null;      // *
+    private ?DateTime           $created = null;        // *
+    private ?string             $description = null;    // *
+    private ?DateTime           $dtStart = null;        // *
+    private ?EventLocation      $location = null;       // *
+    private ?DateTime           $lastModified = null;   // *
+    private ?Organizer          $organizer = null;      // *
+    private int                 $percentComplete = 0;   // *
+    private int                 $priority = 0;          // *
+    private ?TaskRecurrenceId   $recurId = null;        // *
+    private int                 $seq = 0;               // *
+    private string              $status;                // *
+    private ?string             $summary = null;        // *
     
-    private ?string $attach = null; // TODO gest structure
-    private ?Collection $attendees = null;
-    private ?string $categories = null;
-    private ?string $comment = null;
-    private ?Contact $contact = null;
-    private ?string $exDate = null;
-    private ?string $requestStatus = null; // TODO gest Structure
-    private ?string $relatedTo = null;
-    private ?string $resources = null;
-    private ?string $rData = null;
+    private ?string             $attach = null;         // *
+    private ?Collection         $attendees = null;      // *
+    private ?string             $categories = null;     // *
+    private ?string             $comment = null;        // *
+    private ?Contact            $contact = null;        // *
+    private ?string             $exDate = null;         // *
+    private ?string             $rtStatus = null;       // *
+    private ?string             $related = null;        // *
+    private ?string             $resources = null;      // *
+    private ?string             $rDate = null;          // *
+
+    private ?string             $url = null;            //
+    private ?EventRepetition    $rrule = null;          //
+    private ?string             $due = null;            //
+    private ?string             $duration = null;       //
 
     public function __construct(EntityManagerInterface $entityManager, CalTask $calTask = null)
     {

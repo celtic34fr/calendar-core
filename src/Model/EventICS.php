@@ -4,6 +4,7 @@ namespace Celtic34fr\CalendarCore\Model;
 
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalEvent;
+use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\EntityRedefine\ParameterCalEvent;
@@ -45,6 +46,23 @@ class EventICS
     private ?EventRepetition    $frequence = null;  // *
     private ?Organizer          $organizer = null;  // *
     private ?Collection         $alarms = null;     // *
+
+    private ?DateTime           $dtStamp = null;    //
+    private ?array              $classes = null;    //
+    private ?string             $priority = null;   //
+    private ?int                $seq = null;        //
+    private ?string             $transp = null;     //
+    private ?string             $url = null;        //
+    private ?string             $recurId = null;    //
+    private ?string             $duration = null;   //
+    private ?array              $attach = null;     //
+    private ?array              $categories = null; //
+    private ?Contact            $contact = null;    //
+    private ?DateTime           $exDate = null;     //
+    private ?string             $rstatus = null;    //
+    private ?string             $related = null;    //
+    private ?string             $resources = null;  //
+    private ?DateTime           $rdate = null;      // 
 
     public function __construct(EntityManagerInterface $entityManager, CalEvent $calEvent = null)
     {
