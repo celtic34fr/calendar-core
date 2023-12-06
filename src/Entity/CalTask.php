@@ -3,10 +3,13 @@
 namespace Celtic34fr\CalendarCore\Entity;
 
 use Celtic34fr\CalendarCore\Entity\Organizer;
+use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
+use Celtic34fr\CalendarCore\Model\TaskRecurrenceId;
 use Celtic34fr\CalendarCore\Repository\CalTaskRepository;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -33,7 +36,7 @@ class CalTask
     
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?string $class = null;
+    private ?array $classes = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     #[Assert\DateTime]
@@ -68,7 +71,7 @@ class CalTask
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
     private int $priority = 0;
 
-    private ?string $reccurenceId = null; // TODO gest structure
+    private ?TaskRecurrenceId $recurrenceId = null; // TODO gest structure
 
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
     private int $sequence = 0;
@@ -129,6 +132,13 @@ class CalTask
     private ?string $rData = null;
 
 
+    public function __construct()
+    {
+        $this->setStatus(StatusEnums::NeedsAction->_toString());
+        $this->attendees = new ArrayCollection();
+    }
+    
+
     /**
      * @return integer|null
      */
@@ -168,6 +178,47 @@ class CalTask
     public function setDtStamp(DateTime $dtStamp): self
     {
         $this->dtStamp = $dtStamp;
+        return $this;
+    }
+
+    /**
+     * Get the value of classes
+     */
+    public function getClasses(): ?array
+    {
+        return $this->classes;
+    }
+
+    public function emptyClasses(): bool
+    {
+        return empty($this->classes);
+    }
+
+    public function addClass(string $class)
+    {
+        if (!in_array($class, $this->classes)) {
+            $this->classes[] = $class;
+            return $this;
+        }
+        return false;
+    }
+
+    public function removeClass(string $class)
+    {
+        if (in_array($class, $this->classes)) {
+            $key = array_search($class, $this->classes);
+            unset($this->classes[$key]);
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * Set the value of class
+     */
+    public function setClasses(array $classes): self
+    {
+        $this->classes = $classes;
         return $this;
     }
 
@@ -260,6 +311,32 @@ class CalTask
     }
 
     /**
+     * Get the value of location
+     * @return EventLocation|null
+     */
+    public function getLocation(): ?EventLocation
+    {
+        return $this->location;
+    }
+
+    public function emptyLocation(): bool
+    {
+        return empty($this->location);
+    }
+
+    /**
+     * set the value of location
+     * @param EventLocation|null $location
+     * @return CalEvent
+     */
+    public function setLocation(?EventLocation $location): self
+    {
+        $this->location = $location;
+
+        return $this;
+    }
+
+    /**
      * Get the value of lastModified
      */
     public function getLastModified(): ?DateTime
@@ -346,6 +423,23 @@ class CalTask
     }
 
     /**
+     * Get the value of recurrenceId
+     */
+    public function getRecurrenceId(): ?TaskRecurrenceId
+    {
+        return $this->recurrenceId;
+    }
+
+    /**
+     * Set the value of recurrenceId
+     */
+    public function setRecurrenceId(TaskRecurenceId $recurrenceId): self
+    {
+        $this->recurrenceId = $recurrenceId;
+        return $this;
+    }
+
+    /**
      * Get the value of sequence
      */
     public function getSequence(): int
@@ -362,5 +456,83 @@ class CalTask
 
         $this->sequence = $sequence;
         return $this;
+    }
+
+    /**
+     * Get the value of status of the task
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    /**
+     * Set the value of status
+     * @param string $status
+     * @return CalTask|bool
+     */
+    public function setStatus(string $status): mixed
+    {
+        if (StatusEnums::isValidVtodo($status)) {
+            $this->status = $status;
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * Object or Summary of task
+     * @return ?string
+     */
+    public function getSummary(): ?string
+    {
+        return $this->summary;
+    }
+
+    /**
+     * set the value of Object or Summary of Task
+     * @param string $summary
+     * @return CalTask
+     */
+    public function setSummary(string $summary): self
+    {
+        $this->summary = $summary;
+        return $this;
+    }
+
+    /**
+     * get the Attendees of the Event
+     * @return Collection<int, Attendee>
+     */
+    public function getAttendees(): Collection
+    {
+        return $this->attendees;
+    }
+
+    /**
+     * add 1 attendee to the Attendees of the Event
+     * @param Attendee $attendee
+     * @return CalTask
+     */
+    public function addAttendee(Attendee $attendee): self
+    {
+        if (!$this->attendees->contains($attendee)) {
+            $this->attendees->add($attendee);
+        }
+        return $this;
+    }
+
+    /**
+     * remove 1 attendee if exist in Attendees of the Event
+     * @param Attendee $attendee
+     * @return CalTask|bool
+     */
+    public function removeAttendee(Attendee $attendee): mixed
+    {
+        if ($this->attendees->removeElement($attendee)) {
+            return $this;
+        }
+        return false;
     }
 }

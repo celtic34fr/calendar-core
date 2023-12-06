@@ -10,13 +10,13 @@ class EventAlarm
     private string $action;
     private string $trigger;
 
-    private string $duration;
-    private int $repeat;
+    private ?string $duration = null;
+    private ?int $repeat = null;
 
-    private string $attach;
-    private string $description;
-    private string $summary;
-    private array $attendees;
+    private ?array $attach = null;
+    private ?string $description = null;
+    private ?string $summary = null;
+    private ?array $attendees = null;
 
 
     public function __construct(?array $valarm = null)
@@ -56,6 +56,7 @@ class EventAlarm
 
     /**
      * Get the value of action
+     * @return string
      */
     public function getAction(): string
     {
@@ -64,6 +65,8 @@ class EventAlarm
 
     /**
      * Set the value of action
+     * @param string $action
+     * @return self|bool
      */
     public function setAction(string $action): self
     {
@@ -76,6 +79,7 @@ class EventAlarm
 
     /**
      * Get the value of trigger
+     * @return string
      */
     public function getTrigger(): string
     {
@@ -84,6 +88,8 @@ class EventAlarm
 
     /**
      * Set the value of trigger
+     * @param string $trigger
+     * @return self
      */
     public function setTrigger(string $trigger): self
     {
@@ -93,14 +99,16 @@ class EventAlarm
 
     /**
      * Get the value of duration
+     * @return string|null
      */
-    public function getDuration(): string
+    public function getDuration(): ?string
     {
         return $this->duration;
     }
 
     /**
      * Set the value of duration
+     * @param string $duration
      */
     public function setDuration(string $duration): self
     {
@@ -110,14 +118,17 @@ class EventAlarm
 
     /**
      * Get the value of repeat
+     * @return int|null
      */
-    public function getRepeat(): int
+    public function getRepeat(): ?int
     {
         return $this->repeat;
     }
 
     /**
      * Set the value of repeat
+     * @param int $repeat
+     * @return self
      */
     public function setRepeat(int $repeat): self
     {
@@ -127,16 +138,19 @@ class EventAlarm
 
     /**
      * Get the value of attach
+     * @return array|null
      */
-    public function getAttach(): string
+    public function getAttach(): ?array
     {
         return $this->attach;
     }
 
     /**
      * Set the value of attach
+     * @param array $attach
+     * @return self
      */
-    public function setAttach(string $attach): self
+    public function setAttach(array $attach): self
     {
         $this->attach = $attach;
         return $this;
@@ -144,14 +158,17 @@ class EventAlarm
 
     /**
      * Get the value of description
+     * @return string|null
      */
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     /**
      * Set the value of description
+     * @param string $description
+     * @return self
      */
     public function setDescription(string $description): self
     {
@@ -161,14 +178,17 @@ class EventAlarm
 
     /**
      * Get the value of summary
+     * @return string|null
      */
-    public function getSummary(): string
+    public function getSummary(): ?string
     {
         return $this->summary;
     }
 
     /**
      * Set the value of summary
+     * @param string $summary
+     * @return self
      */
     public function setSummary(string $summary): self
     {
@@ -178,13 +198,18 @@ class EventAlarm
 
     /**
      * Get the value of attendees
+     * @return array|null
      */
-    public function getAttendees(): array
+    public function getAttendees(): ?array
     {
         return $this->attendees;
     }
 
-    public function addAttendee(Attendee $attendee)
+    /**
+     * @param Attendee $attendee
+     * @return self|bool
+     */
+    public function addAttendee(Attendee $attendee): mixed
     {
         if (!in_array($attendee, $this->attendees)) {
             $this->attendees[] = $attendee;
@@ -193,7 +218,11 @@ class EventAlarm
         return false;
     }
 
-    public function removeAttendee(Attendee $attendee)
+    /**
+     * @param Attendee $attendee
+     * @return sekf|bool
+     */
+    public function removeAttendee(Attendee $attendee): mixed
     {
         if (in_array($attendee, $this->attendees)) {
             $idx = array_search($attendee, $this->attendees);
@@ -205,6 +234,8 @@ class EventAlarm
 
     /**
      * Set the value of attendees
+     * @param array $attendees
+     * @return self
      */
     public function setAttendees(array $attendees): self
     {

@@ -34,6 +34,10 @@ class Attendee extends Person
     #[Assert\Type('string')]
     private ?string $member;
     
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    #[Assert\Type('string')]
+    private ?string $role;
+    
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
     #[Assert\Type('string')]
     private string $partStat;
@@ -104,6 +108,23 @@ class Attendee extends Person
     public function setMember(string $member): self
     {
         $this->member = $member;
+        return $this;
+    }
+
+    /**
+     * Get the value of role
+     */
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    /**
+     * Set the value of role
+     */
+    public function setRole(?string $role): self
+    {
+        $this->role = $role;
         return $this;
     }
 

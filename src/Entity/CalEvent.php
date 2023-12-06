@@ -2,6 +2,7 @@
 
 namespace Celtic34fr\CalendarCore\Entity;
 
+use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
@@ -66,8 +67,8 @@ class CalEvent
     #[Assert\DateTime]
     private ?DateTime $end_at = null;
 
-    #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
-    private ?string $subject;
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $subject = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $details = null;
@@ -113,13 +114,13 @@ class CalEvent
     #[Assert\Type('string')]
     private ?string $uid = null;
 
-    #[ORM\Column(type: Types::TEXT, length: 2, nullable:false)]
+    #[ORM\Column(type: Types::TEXT, length: 2, nullable:true)]
     #[Assert\Type('string')]
     #[Assert\Length(
         min: 7,     minMessage: "La taille minimale est de 2 caractères",
         max: 7,     maxMessage: "La taille maximale est de 2 caractères"
     )]
-    private ?string $visibilite;
+    private ?string $visibilite = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
@@ -131,7 +132,7 @@ class CalEvent
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?EventRepetition $frequence;
+    private ?EventRepetition $frequence = null;
 
     #[ORM\ManyToMany(targetEntity: Attendee::class)]
     #[ORM\JoinColumn(name: 'attendee_id', referencedColumnName: 'id', nullable: true)]
@@ -146,7 +147,7 @@ class CalEvent
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?Collection $alarms;
+    private ?Collection $alarms = null;
 
     public function __construct()
     {
@@ -247,9 +248,9 @@ class CalEvent
 
     /**
      * Object or Subject of Event
-     * @return string
+     * @return string|null
      */
-    public function getSubject(): string
+    public function getSubject(): ?string
     {
         return $this->subject;
     }
@@ -317,10 +318,10 @@ class CalEvent
 
     /**
      * Set the value of bg_color
-     * @param string|null $bg_color
+     * @param string $bg_color
      * @return  CalEvent
      */ 
-    public function setBgColor(?string $bg_color): self
+    public function setBgColor(string $bg_color): self
     {
         $this->bg_color = $bg_color;
         return $this;
@@ -357,10 +358,10 @@ class CalEvent
 
     /**
      * Set the value of tx_color
-     * @param string|null $tx_color
+     * @param string $tx_color
      * @return CalEvent
      */ 
-    public function setTxColor(?string $tx_color): self
+    public function setTxColor(string $tx_color): self
     {
         $this->tx_color = $tx_color;
         return $this;
@@ -372,7 +373,7 @@ class CalEvent
      */ 
     public function getAllDay(): bool
     {
-        return $this->all_day;
+        return (bool) $this->all_day;
     }
 
     /**
@@ -382,8 +383,7 @@ class CalEvent
      */ 
     public function setAllDay(bool $all_day): self
     {
-        $this->all_day = $all_day;
-
+        $this->all_day = (bool) $all_day;
         return $this;
     }
 
@@ -421,10 +421,10 @@ class CalEvent
 
     /**
      * set the value of uid
-     * @param string|null $uid
+     * @param string $uid
      * @return CalEvent
      */
-    public function setUid(?string $uid): self
+    public function setUid(string $uid): self
     {
         $this->uid = $uid;
         return $this;
@@ -441,10 +441,10 @@ class CalEvent
 
     /**
      * set the value of visibilite
-     * @param string|null $visibilite
+     * @param string $visibilite
      * @return CalEvent|bool
      */
-    public function setVisibilite(?string $visibilite): mixed
+    public function setVisibilite(string $visibilite): mixed
     {
         if (VisibiliteEnums::isValid($visibilite)) {
             $this->visibilite = $visibilite;
@@ -464,10 +464,10 @@ class CalEvent
 
     /**
      * set the value of location
-     * @param EventLocation|null $location
+     * @param EventLocation $location
      * @return CalEvent
      */
-    public function setLocation(?EventLocation $location): self
+    public function setLocation(EventLocation $location): self
     {
         $this->location = $location;
 
@@ -476,6 +476,7 @@ class CalEvent
 
     /**
      * Get the value of Timezone
+     * @return string|null
      */
     public function getTimezone(): ?string
     {
@@ -484,11 +485,11 @@ class CalEvent
 
     /**
      * Set the value of Timezone
+     * @param string $timezone
      */
-    public function setTimezone(?string $timezone): self
+    public function setTimezone(string $timezone): self
     {
         $this->timezone = $timezone;
-
         return $this;
     }
 
@@ -506,7 +507,7 @@ class CalEvent
      * @param EventRepetition $frequence
      * @return CalEvent
      */
-    public function setFrequence(?EventRepetition $frequence): self
+    public function setFrequence(EventRepetition $frequence): self
     {
         $this->frequence = $frequence;
         return $this;
@@ -514,9 +515,9 @@ class CalEvent
 
     /**
      * get the Attendees of the Event
-     * @return Collection<int, Attendee>
+     * @return Collection<int, Attendee>|null
      */
-    public function getAttendees(): Collection
+    public function getAttendees(): ?Collection
     {
         return $this->attendees;
     }
@@ -549,7 +550,7 @@ class CalEvent
 
     /**
      * Get the value of organizer
-     * @return Organizer
+     * @return Organizer|null
      */
     public function getOrganizer(): ?Organizer
     {
@@ -585,7 +586,10 @@ class CalEvent
         return $this->alarms;
     }
 
-    public function emptyAlarms()
+    /**
+     * @return bool
+     */
+    public function emptyAlarms(): bool
     {
         return empty($this->alarms);
     }
@@ -616,11 +620,12 @@ class CalEvent
 
     /**
      * Set the value of alarms
+     * @param Collection $alarms
+     * @return self
      */
     public function setAlarms(?Collection $alarms): self
     {
         $this->alarms = $alarms;
-
         return $this;
     }
 }

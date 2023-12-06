@@ -2,10 +2,13 @@
 
 namespace Celtic34fr\CalendarCore\Model;
 
+use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalTask;
 use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
+use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventLocation;
+use Celtic34fr\CalendarCore\Model\TaskRecurrenceId;
 use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,7 +20,7 @@ class TaskICS
     private string $uid;
     private DateTime $dtStamp;
 
-    private ?string $class = null;
+    private ?array $classes = null;
     private ?DateTime $completed = null;
     private ?DateTime $created = null;
     private ?string $description = null;
@@ -27,7 +30,7 @@ class TaskICS
     private ?Organizer $organizer = null;
     private int $percentComplete = 0;
     private int $priority = 0;
-    private ?string $reccurenceId = null; // TODO gest structure
+    private ?TaskRecurrenceId $recurrenceId = null; // TODO gest structure
     private int $sequence = 0;
     private string $status;
     private ?string $summary = null;
@@ -51,10 +54,12 @@ class TaskICS
             $this->setUid($calTask->getUid());
             $this->setDtStamp($calTask->getDtStamp());
 
+            if (!$calTask->emptyClasses()) $this->setClasses($calTask->getClasses());
             if (!$calTask->emptyCompleted()) $this->setCompleted($calTask->getCompleted());
             if (!$calTask->emptyCreated()) $this->setCreated($calTask->getCreated());
             if (!$calTask->emptyDescription()) $this->setDescription($calTask->getDescription());
             if (!$calTask->emptyDtStart()) $this->setDtStamp($calTask->getDtStamp());
+            if (!$calTask->emptyLocation()) $this->setLocation($calTask->getLocation());
             if (!$calTask->emptyLastModified()) $this->setLastModified($calTask->getLastModified());
             if (!$calTask->emptyOrganizer()) $this->setOrganizer($calTask->getOrganizer());
             if ($calTask->getPercentComplete() > -1 && $calTask->getPercentComplete() < 101 ) {
@@ -65,6 +70,11 @@ class TaskICS
             }
             if (is_numeric($calTask->getSequence()) && $calTask->getSequence() > -1) {
                 $this->setSequence($calTask->getSequence());
+            }
+            if (!$calTask->getStatus()) $this->setStatus($calTask->getStatus());
+
+            foreach ($calTask->getAttendees() as $attendee) {
+                $this->addAttendee($attendee);
             }
         }
     }
@@ -100,6 +110,42 @@ class TaskICS
     public function setDtStamp(DateTime $dtStamp): self
     {
         $this->dtStamp = $dtStamp;
+        return $this;
+    }
+
+    /**
+     * Get the value of classes
+     */
+    public function getClasses(): ?array
+    {
+        return $this->classes;
+    }
+
+    public function addClass(string $class)
+    {
+        if (!in_array($class, $this->classes)) {
+            $this->classes[] = $class;
+            return $this;
+        }
+        return false;
+    }
+
+    public function removeClass(string $class)
+    {
+        if (in_array($class, $this->classes)) {
+            $key = array_search($class, $this->classes);
+            unset($this->classes[$key]);
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * Set the value of classes
+     */
+    public function setClasses(array $classes): self
+    {
+        $this->classes = $classes;
         return $this;
     }
 
@@ -183,6 +229,26 @@ class TaskICS
     public function setDtStart(?DateTime $dtStart): self
     {
         $this->dtStart = $dtStart;
+        return $this;
+    }
+
+    /**
+     * get the Location of the Event (object EventLocation)
+     * @return EventLocation
+     */
+    public function getLocation(): EventLocation
+    {
+        return $this->location;
+    }
+
+    /**
+     * set the Location of the Event (object EventLocation)
+     * @param EventLocation $location
+     * @return CalendarICS
+     */
+    public function setLocation(EventLocation $location): self
+    {
+        $this->location = $location;
         return $this;
     }
 
@@ -271,6 +337,23 @@ class TaskICS
     }
 
     /**
+     * Get the value of recurrenceId
+     */
+    public function getRecurrenceId(): ?TaskRecurrenceId
+    {
+        return $this->recurrenceId;
+    }
+
+    /**
+     * Set the value of recurrenceId
+     */
+    public function setRecurrenceId(TaskRecurrenceId $recurrenceId): self
+    {
+        $this->recurrenceId = $recurrenceId;
+        return $this;
+    }
+
+    /**
      * Get the value of sequence
      */
     public function getSequence(): int
@@ -286,6 +369,83 @@ class TaskICS
         if (!is_numeric($sequence)) return false;
 
         $this->sequence = $sequence;
+        return $this;
+    }
+
+    /**
+     * get Status of the Event
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    /**
+     * set Status of the Event
+     * @param string $status
+     * @return TaskICS|bool
+     */
+    public function setStatus(string $status): mixed
+    {
+        if (StatusEnums::isValidVtodo($status)) {
+            $this->status = $status;
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * get the Object or Summary of the task
+     * @return ?string
+     */
+    public function getSummary(): string
+    {
+        return $this->summary;
+    }
+
+    /**
+     * set the Object or Summary of the Task
+     *
+     * @param string $summary
+     * @return TaskICS
+     */
+    public function setSummary(string $summary): self
+    {
+        $this->summary = $summary;
+        return $this;
+    }
+
+    /**
+     * get the Persons concerned by the Event
+     * @return Collection<int, Attendee>
+     */
+    public function getAttendees(): ?Collection
+    {
+        return $this->attendees;
+    }
+
+    /**
+     * add one Person concerned by the Event
+     * @param Attendee $attendee
+     * @return TaskICS
+     */
+    public function addAttendee(Attendee $attendee)
+    {
+        if (!$this->attendees->contains($attendee)) {
+            $this->attendees[] = $attendee;
+        }
+        return $this;
+    }
+
+    /**
+     * remove one Person concerned by the Event
+     * @param Attendee $attendee
+     * @return TaskICS
+     */
+    public function removeAttendee(Attendee $attendee)
+    {
+        $this->attendees->removeElement($attendee);
         return $this;
     }
 }

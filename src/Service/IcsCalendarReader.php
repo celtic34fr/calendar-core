@@ -202,6 +202,11 @@ class IcsCalendarReader
             // DTSTART;TZID=Asia/Kolkata:2014-04-19T19:30:00 DTEND:2014-04-19T21:30:00
             case $this->startWith($ligne, "DTSTART") :
             case $this->startWith($ligne, "DTEND") :
+                /**
+                 * 2 formats générals de date :
+                 * -> chaine de caractère ssaammjjThhmmss[Z] ou ssaa-mm-jjThh:mm:ss[Z]
+                 * -> VALUE=DATE:ssaammjj
+                 */
                 $start = substr($ligne, 0, strpos($ligne, ":"));
                 if (sizeof($item) > 2) {
                     $i = 2;
@@ -213,8 +218,13 @@ class IcsCalendarReader
                 $elt = explode(";", $item[0]);
                 $start = $elt[0];
 
+                if (strpos($elt[0], "-") !== false || strpos($elt[0], ":")) {
+                    $elt[0] = $this->formatDate($elt[0]);
+                }
+                if (is_numeric($elt[0]) && strlen($elt[0]) == 8) $elt[0] .= "T000000";
+
                 if ($start === $item[0]) {
-                    $extract[$item[0]] = $item[1];
+                    $extract[$start] = ["VALUE" => $item[1]];
                 } else {
                     $elt = explode("=", $elt[1]);
                     $extract[$start] = [$elt[0] => $elt[1], "VALUE" => $item[1]];
@@ -252,6 +262,8 @@ class IcsCalendarReader
                 $extract = ['ATTENDEE' => $extract];
                 break;
             // ATTACH;FMTTYPE=audio/basic:http://example.com/pub/audio-files/ssbanner.aud
+            // ATTACH:CID:jsmith.part3.960817T083000.xyzMail@example.com
+            // ATTACH;FMTTYPE=application/postscript:ftp://example.com/pub/reports/r-960812.ps
             case $this->startWith($ligne, 'ATTACH'):
                 if (in_array('HTTP', $item) || in_array('Http', $item) || in_array('http', $item)) {
                     $key = array_search('HTTP', $item);
@@ -259,14 +271,24 @@ class IcsCalendarReader
                     $key = !$key ? array_search('http', $item) : $key;
                     $item[$key] = $item[$key] .':'. $item[$key + 1];
                     unset($item[$key + 1]);
+                    $key = array_search('FTP', $item);
+                    $key = !$key ? array_search('Ftp', $item) : $key;
+                    $key = !$key ? array_search('ftp', $item) : $key;
+                    $item[$key] = $item[$key] .':'. $item[$key + 1];
+                    unset($item[$key + 1]);
                 }
                 $local = explode(";", $item[0]);
                 $tmp = array_shift($local);
                 foreach ($local as $elt) {
                     $elt = explode("=", $elt);
+                    if (sizeof($elt) < 2) break;
                     $extract[strtoupper($elt[0])] = $elt[1];
                 }
-                $extract['URL'] = $item[1];
+                if (!strpos($local[0], "=")) {
+                    $extract = [$local[0] => $item[1]];
+                } else {
+                    $extract['URL'] = $item[1];
+                }
                 $extract = ['ATTACH' => $extract];
                 break;
             case $this->startWith($ligne, "CATEGORIES"):
@@ -279,6 +301,42 @@ class IcsCalendarReader
                     'LATITUDE' => $params[0],
                     'LONGITUDE' => $params[1],
                 ];
+                break;
+            case $this->startWith($ligne, "RECURRENCE-ID"):
+                $local = explode(";", $item[0]);
+                $tmp = array_shift($local);
+                foreach ($local as $elt) {
+                    $elt = explode("=", $elt);
+                    if ($elt[0] != "VALUE") {
+                        $extract[strtoupper($elt[0])] = $elt[1];
+                    }
+                }
+                $extract["VALUE"] = $item[1];
+                $extract = ["RECURRENCE-ID" => $extract];
+                break;
+            case $this->startWith($ligne, "REQUEST-STATUS"):
+                // structure propre + autre componant possible en exdata
+                $local = explode(";", $item[0]);
+                foreach ($local as $key => $elt) {
+                    if (empty($elt)) unset($local[$key]);
+                }
+                if (sizeof($local) > 1) { // paramètres ALTREP/LANGUAGE
+                    $tmp = array_shift($local);
+                    foreach ($local as $elt) {
+                        $elt = explode("=", $elt);
+                        $extract[strtoupper($elt[0])] = $elt[1];
+                    }
+                }
+                $local = explode(";", $item[1]);
+                $extract["CODE"] = $local[0];
+                $extract["DESC"] = $local[1];
+
+                if (sizeof($local) > 2 && sizeof($item) > 2) {
+                    $local = $local[2].":".$item[2];
+                    $local = $this->extractItem($local);
+                    $extract["EXDATA"] = $local;
+                }
+                $extract = ["REQUEST-STATUS" => $extract];
                 break;
             default:
                 $extract[$item[0]] = $item[1];
@@ -320,5 +378,17 @@ class IcsCalendarReader
             }
         }
         return [$lignes, $bloc];
+    }
+
+    private function formatDate(string $origin): string
+    {
+        $result = $origin;
+        while ($idx = strpos($result, "-")) {
+            $result = substr($result, 0, $idx).substr($result, $idx + 1);
+        }
+        while ($idx = strpos($result, ":")) {
+            $result = substr($result, 0, $idx).substr($result, $idx + 1);
+        }
+        return $result;
     }
 }
