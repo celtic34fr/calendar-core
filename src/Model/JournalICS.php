@@ -38,4 +38,9 @@ class JournalICS
     private ?string             $related = null;        //
     private ?string             $rDate = null;          //
     private ?string             $rStatus = null;        //
+
+    public function __construct(EntityManagerInterface $entityManager, CalJourn $calJourn = null)
+    {
+        $this->entityManager = $entityManager;
+    }
 }

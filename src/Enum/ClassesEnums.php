@@ -4,7 +4,7 @@ namespace Celtic34fr\CalendarCore\Enum;
 
 use Celtic34fr\CalendarCore\Traits\EnumToArray;
 
-enum VisibiliteEnums: string
+enum ClassesEnums: string
 {
     use EnumToArray;
 

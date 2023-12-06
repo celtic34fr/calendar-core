@@ -15,7 +15,7 @@ class FreeBusyICS
     private string              $uid;                   //
     private DateTime            $dtStamp;               //
 
-    private ?Contact            $caontact = null;       //
+    private ?Contact            $contact = null;        //
     private ?DateTime           $dtStart = null;        //
     private ?DateTime           $dtEnd = null;          //
     private ?Organizer          $organizer = null;      //
@@ -26,4 +26,9 @@ class FreeBusyICS
     private ?Collection         $freesBusies = null;    //
     private ?string             $rStatus = null;        //
     
+    public function __construct(EntityManagerInterface $entityManager, CalFreeBusy $calFreeBusy = null)
+    {
+        $this->entityManager = $entityManager;
+    }
+
 }

@@ -8,8 +8,8 @@ use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\EntityRedefine\ParameterCalEvent;
+use Celtic34fr\CalendarCore\Enum\ClassesEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
-use Celtic34fr\CalendarCore\Enum\VisibiliteEnums;
 use Celtic34fr\CalendarCore\Model\EventAlarm;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
@@ -40,7 +40,7 @@ class EventICS
     private string              $status;            // *
     private ?Collection         $attendees = null;  // *
     private ?string             $uid = null;        // *
-    private ?string             $visibilite = null; //
+    private ?string             $classes = null;    // *
     private ?EventLocation      $location = null;   // *
     private ?string             $timezone = null;   // *
     private ?EventRepetition    $frequence = null;  // *
@@ -48,7 +48,6 @@ class EventICS
     private ?Collection         $alarms = null;     // *
 
     private ?DateTime           $dtStamp = null;    //
-    private ?array              $classes = null;    //
     private ?string             $priority = null;   //
     private ?int                $seq = null;        //
     private ?string             $transp = null;     //
@@ -580,23 +579,23 @@ class EventICS
     }
 
     /**
-     * get the Visibilite of the Event
+     * get the classes of the Event
      * @return string|null
      */
-    public function getVisibilite(): ?string
+    public function getClasses(): ?string
     {
-        return $this->visibilite;
+        return $this->classes;
     }
 
     /**
-     * set the Visibilite of the Event
-     * @param string|null $visibilite
+     * set the classes of the Event
+     * @param string|null $classes
      * @return EventICS|bool
      */
-    public function setVisibilite(string $visibilite): mixed
+    public function setClasses(string $classes): mixed
     {
-        if (VisibiliteEnums::isValid($visibilite)) {
-            $this->visibilite = $visibilite;
+        if (ClassesEnums::isValid($classes)) {
+            $this->classes = $classes;
             return $this;
         }
         return false;

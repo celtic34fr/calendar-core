@@ -5,8 +5,8 @@ namespace Celtic34fr\CalendarCore\Entity;
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
+use Celtic34fr\CalendarCore\Enum\ClassesEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
-use Celtic34fr\CalendarCore\Enum\VisibiliteEnums;
 use Celtic34fr\CalendarCore\Model\EventAlarm;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
@@ -36,13 +36,29 @@ use Symfony\Component\Validator\Constraints as Assert;
  * - all_day        : top booléen indiquant si l'événement est en jour (true) ou en durée (false), à false par défaut
  * - status         : statut de l'événement
  * - uid            : UID associé à l'événement
- * - visibilite     : visibilité de l'événement (CLASS dans la norme RFC) : Privé, Public ou Confidentiel en base
+ * - classes        : visibilité de l'événement (CLASS dans la norme RFC) : Privé, Public ou Confidentiel en base
  * - location       : précisiot de l'emplacement ou se déroule l'événement (objet EventLocation)
  * - timezone       : chaîne de caractère précisant le fuseau hpraire de référence pour l'événement
  * - frequence      : précise si renseigné, si lévénement doit êtrŒe répété et comment (RRULE componant)
  * - attendees      : participant à l'événement
  * - organizer      : organisateur de l'événement
  * - alarms         : défini et précise les alarmes paramétrées sur l'événement
+ * - dt_stamp       :
+ * - priority       :
+ * - seq            :
+ * - transp         :
+ * - url            :
+ * - recur_id       :
+ * - duration       : durée de l'événement DateTimeInterval
+ * - attach         :
+ * - categories     :
+ * - contact        :
+ * - ex_date        :
+ * - r_status       :
+ * - related        :
+ * - resources      :
+ * - rDate          :
+
  */
 class CalEvent
 {
@@ -120,7 +136,7 @@ class CalEvent
         min: 7,     minMessage: "La taille minimale est de 2 caractères",
         max: 7,     maxMessage: "La taille maximale est de 2 caractères"
     )]
-    private ?string $visibilite = null;
+    private ?string $classes = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
@@ -149,12 +165,64 @@ class CalEvent
     #[Assert\Type('array')]
     private ?Collection $alarms = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private ?DateTime $dt_stamp = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $priority = null;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $seq = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $transp = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $url = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $recur_id = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $duration = null;
+
+    #[ORM\Column(type: Types::JSON, nullable:true)]
+    #[Assert\Type('array')]
+    private ?Collection $attach = null;
+
+    #[ORM\Column(type: Types::JSON, nullable:true)]
+    #[Assert\Type('array')]
+    private ?Collection $categories = null;
+
+    #[ORM\ManyToOne(targetEntity: Contact::class)]
+    #[ORM\JoinColumn(name: 'contact_id', referencedColumnName: 'id', nullable: true)]
+    private ?Contact $contact = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private ?DateTime $ex_date = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $r_status = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $related = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
+    private ?string $resources = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private ?DateTime $r_date = null; 
+
     public function __construct()
     {
         $this->setStatus(StatusEnums::NeedsAction->_toString());
-        $this->setVisibilite(VisibiliteEnums::Public->_toString());
+        $this->setClasses(ClassesEnums::Public->_toString());
         $this->attendees = new ArrayCollection();
         $this->alarms = new ArrayCollection();
+        $this->attach = new ArrayCollection();
     }
 
     /**
@@ -431,23 +499,23 @@ class CalEvent
     }
 
     /**
-     * Get the value of visibilite
+     * Get the value of classes
      * @return string|null
      */
-    public function getVisibilite(): ?string
+    public function getClasses(): ?string
     {
-        return $this->visibilite;
+        return $this->classes;
     }
 
     /**
-     * set the value of visibilite
-     * @param string $visibilite
+     * set the value of classes
+     * @param string $classes
      * @return CalEvent|bool
      */
-    public function setVisibilite(string $visibilite): mixed
+    public function setClasses(string $classes): mixed
     {
-        if (VisibiliteEnums::isValid($visibilite)) {
-            $this->visibilite = $visibilite;
+        if (ClassesEnums::isValid($classes)) {
+            $this->classes = $classes;
             return $this;
         }
         return false;
@@ -626,6 +694,336 @@ class CalEvent
     public function setAlarms(?Collection $alarms): self
     {
         $this->alarms = $alarms;
+        return $this;
+    }
+
+    /**
+     * Get the value of dt_stamp
+     * @return DateTime|null
+     */
+    public function getDtStamp(): ?DateTime
+    {
+        return $this->dt_stamp;
+    }
+
+    /**
+     * Set the value of dt_stamp
+     * @param DateTime $dt_stamp
+     * @return self
+     */
+    public function setDtStamp(DateTime $dt_stamp): self
+    {
+        $this->dt_stamp = $dt_stamp;
+        return $this;
+    }
+
+    /**
+     * Get the value of priority
+     * @return string|null
+     */
+    public function getPriority(): ?string
+    {
+        return $this->priority;
+    }
+
+    /**
+     * Set the value of priority
+     * @param string $priority
+     * @return self
+     */
+    public function setPriority(string $priority): self
+    {
+        $this->priority = $priority;
+        return $this;
+    }
+
+    /**
+     * Get the value of seq
+     * @return int|null
+     */
+    public function getSeq(): ?int
+    {
+        return $this->seq;
+    }
+
+    /**
+     * Set the value of seq
+     * @param int $seq
+     * @return self
+     */
+    public function setSeq(string $seq): self
+    {
+        $this->seq = $seq;
+        return $this;
+    }
+
+    /**
+     * Get the value of transp
+     * @return string|null
+     */
+    public function getTransp(): ?string
+    {
+        return $this->transp;
+    }
+
+    /**
+     * Set the value of transp
+     * @param string $transp
+     * @return self
+     */
+    public function setTransp(string $transp): self
+    {
+        $this->transp = $transp;
+        return $this;
+    }
+
+    /**
+     * Get the value of url
+     * @return string|null
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    /**
+     * Set the value of url
+     * @param string $url
+     * @return self
+     */
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+        return $this;
+    }
+
+    /**
+     * Get the value of recur_id
+     * @return string|null
+     */
+    public function getRecurId(): ?string
+    {
+        return $this->recur_id;
+    }
+
+    /**
+     * Set the value of recur_id
+     * @param string $recur_id
+     * @return self
+     */
+    public function setRecurId(string $recur_id): self
+    {
+        $this->recur_id = $recur_id;
+        return $this;
+    }
+
+    /**
+     * Get the value of duration
+     * @return string|null
+     */
+    public function getDuration(): ?string
+    {
+        return $this->duration;
+    }
+
+    /**
+     * Set the value of duration
+     * @param string $duration
+     * @return self
+     */
+    public function setDuration(string $duration): self
+    {
+        $this->duration = $duration;
+        return $this;
+    }
+
+    /**
+     * get the Attachs of the Event
+     * @return Collection<int, array>|null
+     */
+    public function getAttachs(): ?Collection
+    {
+        return $this->attach;
+    }
+
+    /**
+     * add 1 attach to the Attachs of the Event
+     * @param array $attach
+     * @return CalEvent
+     */
+    public function addAttach(array $attach): self
+    {
+        if (!$this->attach->contains($attach)) {
+            $this->attach->add($attach);
+        }
+        return $this;
+    }
+
+    /**
+     * remove 1 attach if exist in Attachs of the Event
+     * @param array $attach
+     * @return CalEvent|bool
+     */
+    public function removeAttach(array $attach): mixed
+    {
+        if ($this->attach->removeElement($attach)) {
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * get the Categories of the Event
+     * @return Collection<int, array>|null
+     */
+    public function getCategories(): ?Collection
+    {
+        return $this->categories;
+    }
+
+    /**
+     * add 1 category to the Categories of the Event
+     * @param string $category
+     * @return CalEvent
+     */
+    public function addCategory(string $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+        return $this;
+    }
+
+    /**
+     * remove 1 category if exist in Categories of the Event
+     * @param string $category
+     * @return CalEvent|bool
+     */
+    public function removeCategory(string $category): mixed
+    {
+        if ($this->categories->removeElement($category)) {
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * Get the value of contact
+     * @return Contact|null
+     */
+    public function getContact(): ?Contact
+    {
+        return $this->contact;
+    }
+
+    /**
+     * Set the value of contact
+     * @param Contact $contact
+     * @return self
+     */
+    public function setContact(Contact $contact): self
+    {
+        $this->contact = $contact;
+        return $this;
+    }
+
+    /**
+     * Get the value of ex_date
+     * @return DateTime|null
+     */
+    public function getExDate(): ?DateTime
+    {
+        return $this->ex_date;
+    }
+
+    /**
+     * Set the value of ex_date
+     * @param DateTime $ex_date
+     * @return self
+     */
+    public function setExDate(DateTime $ex_date): self
+    {
+        $this->ex_date = $ex_date;
+        return $this;
+    }
+
+    /**
+     * Get the value of r_status
+     * @return string|null
+     */
+    public function getRStatus(): ?string
+    {
+        return $this->r_status;
+    }
+
+    /**
+     * Set the value of r_status
+     * @param string $r_status
+     * @return self
+     */
+    public function setRStatus(string $r_status): self
+    {
+        $this->r_status = $r_status;
+        return $this;
+    }
+
+    /**
+     * Get the value of related
+     * @return string |null
+     */
+    public function getRelated(): ?string
+    {
+        return $this->related;
+    }
+
+    /**
+     * Set the value of related
+     * @param string $related
+     * @return self
+     */
+    public function setRelated(string $related): self
+    {
+        $this->related = $related;
+        return $this;
+    }
+
+    /**
+     * Get the value of resources
+     * @return string|null
+     */
+    public function getResources(): ?string
+    {
+        return $this->resources;
+    }
+
+    /**
+     * Set the value of resources
+     * @param string $resources
+     * @return self
+     */
+    public function setResources(string $resources): self
+    {
+        $this->resources = $resources;
+        return $this;
+    }
+
+    /**
+     * Get the value of r_date
+     * @return DateTiome|null
+     */
+    public function getRDate(): ?DateTime
+    {
+        return $this->r_date;
+    }
+
+    /**
+     * Set the value of r_date
+     * @param DateTime $r_date
+     * @return self
+     */
+    public function setRDate(DateTime $r_date): self
+    {
+        $this->r_date = $r_date;
         return $this;
     }
 }

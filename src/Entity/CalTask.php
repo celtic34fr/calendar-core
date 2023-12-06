@@ -16,9 +16,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CalTaskRepository::class)]
-#[ORM\Table('taskevents')]
+#[ORM\Table('cal_tasks')]
 /**
- * Class CalEvent : Calendar Task
+ * Class CalTask : Calendar Task
  */
 class CalTask
 {
@@ -38,18 +38,18 @@ class CalTask
     #[Assert\Type('array')]
     private ?array $classes = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
     private ?DateTime $completed = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
     private ?DateTime $created = null;
 
-    #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
     private ?DateTime $dtstart = null;
 
@@ -57,7 +57,7 @@ class CalTask
     #[Assert\Type('array')]
     private ?EventLocation $location = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
     private ?DateTime $lastModified = null;
 
@@ -71,6 +71,8 @@ class CalTask
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
     private int $priority = 0;
 
+    #[ORM\Column(type: Types::JSON, nullable:true)]
+    #[Assert\Type('array')]
     private ?TaskRecurrenceId $recurrenceId = null; // TODO gest structure
 
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
@@ -83,15 +85,20 @@ class CalTask
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
     private ?string $summary = null;
 
-    #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
-    private ?string $url = null;
-
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
     private ?EventRepetition $frequence;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Assert\DateTime]
     private ?DateTime $due = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable:false)]
+    #[Assert\Type('string')]
     private ?string $duration = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 64, nullable:false)]
+    #[Assert\Type('string')]
     private ?string $attach = null; // TODO gest structure
 
     #[ORM\ManyToMany(targetEntity: Attendee::class)]
@@ -103,7 +110,7 @@ class CalTask
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?string $categories = null;
+    private ?array $categories = null;
 
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
     private ?string $comment = null;
@@ -112,25 +119,33 @@ class CalTask
     #[ORM\JoinColumn(name: 'contact_id', referencedColumnName: 'id', nullable: true)]
     private ?Contact $contact = null;
 
-    #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
-    private ?string $exDate = null;
+    #[ORM\Column(type: Types::TEXT, nullable:true)]
+    #[Assert\Type('string')]
+    private ?string $ex_date = null;
 
-    #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
-    private ?string $requestStatus = null; // TODO gest Structure
+    #[ORM\Column(type: Types::TEXT, nullable:true)]
+    #[Assert\Type('string')]
+    private ?string $r_status = null; // TODO gest Structure
 
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
-    private ?string $relatedTo = null;
+    #[Assert\Type('string')]
+    private ?string $related = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
     private ?string $resources = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable:true)]
+    #[Assert\Type('string')]
+    private ?string $r_date = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
+    #[Assert\Type('string')]
+    private ?string $url = null;
+
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?string $rData = null;
-
+    private ?EventRepetition $rrule = null;
 
     public function __construct()
     {
