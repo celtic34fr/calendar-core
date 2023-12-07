@@ -54,14 +54,14 @@ class EventICS
     private ?string             $url = null;        //
     private ?string             $recurId = null;    //
     private ?string             $duration = null;   //
-    private ?array              $attach = null;     //
-    private ?array              $categories = null; //
+    private ?Collection         $attachs = null;    //
+    private ?Collection         $categories = null; //
     private ?Contact            $contact = null;    //
     private ?DateTime           $exDate = null;     //
-    private ?string             $rstatus = null;    //
+    private ?string             $rStatus = null;    //
     private ?string             $related = null;    //
     private ?string             $resources = null;  //
-    private ?DateTime           $rdate = null;      // 
+    private ?DateTime           $rDate = null;      // 
 
     public function __construct(EntityManagerInterface $entityManager, CalEvent $calEvent = null)
     {
@@ -89,7 +89,31 @@ class EventICS
             if (!$this->emptyTimezone()) $this->setTimezone($calEvent->getTimezone());
             $this->setFrequence($calEvent->getFrequence());
             if (!$calEvent->emptyOrganizer()) $this->setOrganizer($calEvent->getOrganizer());
-            IF (!$calEvent->emptyAlarms()) $this->setAlarms($calEvent->getAlarms());
+            if (!$calEvent->emptyAlarms()) $this->setAlarms($calEvent->getAlarms());
+
+            if ($calEvent->emptyDtStamp()) $this->setDtStamp($calEvent->getDtStamp());
+            if (!$calEvent->emptyPriority()) $this->setPriority($calEvent->getPriority());
+            if (!$calEvent->emptySeq()) $this->setSeq($calEvent->getSeq());
+            if (!$calEvent->emptyTransp()) $this->setTransp($calEvent->getTransp());
+            if (!$calEvent->emptyUrl()) $this->setUrl($calEvent->getUrl());
+            if (!$calEvent->emptyRecurId()) $this->setRecurId($calEvent->getRecurId());
+            if (!$calEvent->emptyDuration()) $this->setDuration($calEvent->getDuration());
+            if (!$calEvent->emptyAttachs()) {
+                foreach ($calEvent->getAttachs() as $attach) {
+                    $this->addAttach($attach);
+                }
+            }
+            if (!$calEvent->emptyCategories()) {
+                foreach ($calEvent->getCategories() as $category) {
+                    $this->addCategory($category);
+                }
+            }
+            if (!$calEvent->emptyContact()) $this->setContact($calEvent->getContact());
+            if (!$calEvent->emptyExDate()) $this->setExDate($calEvent->getExDate());
+            if (!$calEvent->emptyRStatus()) $this->setRStatus($calEvent->getRStatus());
+            if (!$calEvent->emptyRelated()) $this->setRelated($calEvent->getRelated());
+            if (!$calEvent->emptyResources()) $this->setResources($calEvent->getResources());
+            if (!$calEvent->emptyRDate()) $this->setRDate($calEvent->getRDate());
         }
     }
 
@@ -880,6 +904,336 @@ class EventICS
     {
         $this->alarms = $alarms;
 
+        return $this;
+    }
+
+    /**
+     * Get the value of dtstamp
+     * @return DateTime|null
+     */
+    public function getDtStamp(): ?DateTime
+    {
+        return $this->dtStamp;
+    }
+
+    /**
+     * Set the value of dtStamp
+     * @param DateTime $dtStamp
+     * @return self
+     */
+    public function setDtStamp(DateTime $dtStamp): self
+    {
+        $this->dtStamp = $dtStamp;
+        return $this;
+    }
+
+    /**
+     * Get the value of priority
+     * @return string|null
+     */
+    public function getPriority(): ?string
+    {
+        return $this->priority;
+    }
+
+    /**
+     * Set the value of priority
+     * @param string $priority
+     * @return self
+     */
+    public function setPriority(string $priority): self
+    {
+        $this->priority = $priority;
+        return $this;
+    }
+
+    /**
+     * Get the value of seq
+     * @return int|null
+     */
+    public function getSeq(): ?int
+    {
+        return $this->seq;
+    }
+
+    /**
+     * Set the value of seq
+     * @param int $seq
+     * @return self
+     */
+    public function setSeq(string $seq): self
+    {
+        $this->seq = $seq;
+        return $this;
+    }
+
+    /**
+     * Get the value of transp
+     * @return string|null
+     */
+    public function getTransp(): ?string
+    {
+        return $this->transp;
+    }
+
+    /**
+     * Set the value of transp
+     * @param string $transp
+     * @return self
+     */
+    public function setTransp(string $transp): self
+    {
+        $this->transp = $transp;
+        return $this;
+    }
+
+    /**
+     * Get the value of url
+     * @return string|null
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    /**
+     * Set the value of url
+     * @param string $url
+     * @return self
+     */
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+        return $this;
+    }
+
+    /**
+     * Get the value of recur_id
+     * @return string|null
+     */
+    public function getRecurId(): ?string
+    {
+        return $this->recurId;
+    }
+
+    /**
+     * Set the value of recurId
+     * @param string $recurId
+     * @return self
+     */
+    public function setRecurId(string $recurId): self
+    {
+        $this->recurId = $recurId;
+        return $this;
+    }
+
+    /**
+     * Get the value of duration
+     * @return string|null
+     */
+    public function getDuration(): ?string
+    {
+        return $this->duration;
+    }
+
+    /**
+     * Set the value of duration
+     * @param string $duration
+     * @return self
+     */
+    public function setDuration(string $duration): self
+    {
+        $this->duration = $duration;
+        return $this;
+    }
+
+    /**
+     * get the Attachs of the Event
+     * @return Collection<int, array>|null
+     */
+    public function getAttachs(): ?Collection
+    {
+        return $this->attachs;
+    }
+
+    /**
+     * add 1 attach to the Attachs of the Event
+     * @param array $attach
+     * @return self
+     */
+    public function addAttach(array $attach): self
+    {
+        if (!$this->attachs->contains($attach)) {
+            $this->attachs->add($attach);
+        }
+        return $this;
+    }
+
+    /**
+     * remove 1 attach if exist in Attachs of the Event
+     * @param array $attach
+     * @return self|bool
+     */
+    public function removeAttach(array $attach): mixed
+    {
+        if ($this->attachs->removeElement($attach)) {
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * get the Categories of the Event
+     * @return Collection<int, array>|null
+     */
+    public function getCategories(): ?Collection
+    {
+        return $this->categories;
+    }
+
+    /**
+     * add 1 category to the Categories of the Event
+     * @param string $category
+     * @return self
+     */
+    public function addCategory(string $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+        return $this;
+    }
+
+    /**
+     * remove 1 category if exist in Categories of the Event
+     * @param string $category
+     * @return self|bool
+     */
+    public function removeCategory(string $category): mixed
+    {
+        if ($this->categories->removeElement($category)) {
+            return $this;
+        }
+        return false;
+    }
+
+    /**
+     * Get the value of contact
+     * @return Contact|null
+     */
+    public function getContact(): ?Contact
+    {
+        return $this->contact;
+    }
+
+    /**
+     * Set the value of contact
+     * @param Contact $contact
+     * @return self
+     */
+    public function setContact(Contact $contact): self
+    {
+        $this->contact = $contact;
+        return $this;
+    }
+
+    /**
+     * Get the value of ex_date
+     * @return DateTime|null
+     */
+    public function getExDate(): ?DateTime
+    {
+        return $this->exDate;
+    }
+
+    /**
+     * Set the value of exDate
+     * @param DateTime $exDate
+     * @return self
+     */
+    public function setExDate(DateTime $exDate): self
+    {
+        $this->exDate = $exDate;
+        return $this;
+    }
+
+    /**
+     * Get the value of rStatus
+     * @return string|null
+     */
+    public function getRStatus(): ?string
+    {
+        return $this->rStatus;
+    }
+
+    /**
+     * Set the value of rStatus
+     * @param string $rStatus
+     * @return self
+     */
+    public function setRStatus(string $rStatus): self
+    {
+        $this->rStatus = $rStatus;
+        return $this;
+    }
+
+    /**
+     * Get the value of related
+     * @return string |null
+     */
+    public function getRelated(): ?string
+    {
+        return $this->related;
+    }
+
+    /**
+     * Set the value of related
+     * @param string $related
+     * @return self
+     */
+    public function setRelated(string $related): self
+    {
+        $this->related = $related;
+        return $this;
+    }
+
+    /**
+     * Get the value of resources
+     * @return string|null
+     */
+    public function getResources(): ?string
+    {
+        return $this->resources;
+    }
+
+    /**
+     * Set the value of resources
+     * @param string $resources
+     * @return self
+     */
+    public function setResources(string $resources): self
+    {
+        $this->resources = $resources;
+        return $this;
+    }
+
+    /**
+     * Get the value of rDate
+     * @return DateTiome|null
+     */
+    public function getRDate(): ?DateTime
+    {
+        return $this->rDate;
+    }
+
+    /**
+     * Set the value of rDate
+     * @param DateTime $rDate
+     * @return self
+     */
+    public function setRDate(DateTime $rDate): self
+    {
+        $this->rDate = $rDate;
         return $this;
     }
 }

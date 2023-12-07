@@ -50,7 +50,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * - url            :
  * - recur_id       :
  * - duration       : durée de l'événement DateTimeInterval
- * - attach         :
+ * - attachs        :
  * - categories     :
  * - contact        :
  * - ex_date        :
@@ -130,12 +130,8 @@ class CalEvent
     #[Assert\Type('string')]
     private ?string $uid = null;
 
-    #[ORM\Column(type: Types::TEXT, length: 2, nullable:true)]
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable:true)]
     #[Assert\Type('string')]
-    #[Assert\Length(
-        min: 7,     minMessage: "La taille minimale est de 2 caractères",
-        max: 7,     maxMessage: "La taille maximale est de 2 caractères"
-    )]
     private ?string $classes = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
@@ -189,7 +185,7 @@ class CalEvent
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?Collection $attach = null;
+    private ?Collection $attachs = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
@@ -222,7 +218,7 @@ class CalEvent
         $this->setClasses(ClassesEnums::Public->_toString());
         $this->attendees = new ArrayCollection();
         $this->alarms = new ArrayCollection();
-        $this->attach = new ArrayCollection();
+        $this->attachs = new ArrayCollection();
     }
 
     /**
@@ -706,6 +702,11 @@ class CalEvent
         return $this->dt_stamp;
     }
 
+    public function emptyDtStamp(): bool
+    {
+        return empty($this->dt_stamp);
+    }
+
     /**
      * Set the value of dt_stamp
      * @param DateTime $dt_stamp
@@ -724,6 +725,14 @@ class CalEvent
     public function getPriority(): ?string
     {
         return $this->priority;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyPriority(): bool
+    {
+        return empty($this->priority);
     }
 
     /**
@@ -747,6 +756,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptySeq(): bool
+    {
+        return empty($this->seq);
+    }
+
+    /**
      * Set the value of seq
      * @param int $seq
      * @return self
@@ -764,6 +781,14 @@ class CalEvent
     public function getTransp(): ?string
     {
         return $this->transp;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyTransp(): bool
+    {
+        return empty($this->transp);
     }
 
     /**
@@ -787,6 +812,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyUrl(): bool
+    {
+        return empty($this->url);
+    }
+
+    /**
      * Set the value of url
      * @param string $url
      * @return self
@@ -804,6 +837,14 @@ class CalEvent
     public function getRecurId(): ?string
     {
         return $this->recur_id;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRecurId(): bool
+    {
+        return empty($this->recur_id);
     }
 
     /**
@@ -827,6 +868,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDuration(): bool
+    {
+        return empty($this->duration);
+    }
+
+    /**
      * Set the value of duration
      * @param string $duration
      * @return self
@@ -843,7 +892,15 @@ class CalEvent
      */
     public function getAttachs(): ?Collection
     {
-        return $this->attach;
+        return $this->attachs;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyAttachs(): bool
+    {
+        return empty($this->attachs);
     }
 
     /**
@@ -853,8 +910,8 @@ class CalEvent
      */
     public function addAttach(array $attach): self
     {
-        if (!$this->attach->contains($attach)) {
-            $this->attach->add($attach);
+        if (!$this->attachs->contains($attach)) {
+            $this->attachs->add($attach);
         }
         return $this;
     }
@@ -866,7 +923,7 @@ class CalEvent
      */
     public function removeAttach(array $attach): mixed
     {
-        if ($this->attach->removeElement($attach)) {
+        if ($this->attachs->removeElement($attach)) {
             return $this;
         }
         return false;
@@ -874,7 +931,7 @@ class CalEvent
 
     /**
      * get the Categories of the Event
-     * @return Collection<int, array>|null
+     * @return Collection<int, string>|null
      */
     public function getCategories(): ?Collection
     {
@@ -892,6 +949,14 @@ class CalEvent
             $this->categories->add($category);
         }
         return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyCategories(): bool
+    {
+        return empty($this->categories);
     }
 
     /**
@@ -917,6 +982,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyContact(): bool
+    {
+        return empty($this->contact);
+    }
+
+    /**
      * Set the value of contact
      * @param Contact $contact
      * @return self
@@ -934,6 +1007,14 @@ class CalEvent
     public function getExDate(): ?DateTime
     {
         return $this->ex_date;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyExDate(): bool
+    {
+        return empty($this->ex_date);
     }
 
     /**
@@ -957,6 +1038,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRStatus(): bool
+    {
+        return empty($this->r_status);
+    }
+
+    /**
      * Set the value of r_status
      * @param string $r_status
      * @return self
@@ -974,6 +1063,14 @@ class CalEvent
     public function getRelated(): ?string
     {
         return $this->related;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRelated(): bool
+    {
+        return empty($this->related);
     }
 
     /**
@@ -997,6 +1094,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyResources(): bool
+    {
+        return empty($this->resources);
+    }
+
+    /**
      * Set the value of resources
      * @param string $resources
      * @return self
@@ -1009,11 +1114,19 @@ class CalEvent
 
     /**
      * Get the value of r_date
-     * @return DateTiome|null
+     * @return DateTime|null
      */
     public function getRDate(): ?DateTime
     {
         return $this->r_date;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRDate(): bool
+    {
+        return empty($this->r_date);
     }
 
     /**
