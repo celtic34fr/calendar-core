@@ -88,7 +88,7 @@ class CalTask
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
-    private ?EventRepetition $rrule;
+    private ?EventRepetition $rrule =null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]

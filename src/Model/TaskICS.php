@@ -128,6 +128,76 @@ class TaskICS
         }
     }
 
+    public function toCalTask(CalTask $calTask = null): CalTask
+    {
+        if (!$calTask) $calTask = new CalTask();
+
+        $calTask->setUid($this->getUid());
+        $calTask->setDtStamp($this->getDtStamp());
+        if (!$this->emptyClasses()) {
+            foreach ($this->getClasses() as $class) {
+                $calTask->addClass($class);
+            }
+        }
+        if (!$this->emptyCompleted()) $calTask->setCompleted($this->getCompleted());
+        if (!$this->emptyCreated()) $calTask->setCreated($this->getCreated());
+        if (!$this->emptyDescription()) $calTask->setDescription($this->getDescription());
+        if (!$this->emptyDtStart()) $calTask->setDtStart($this->getDtStart());
+        if (!$this->emptyLocation()) $calTask->setLocation($this->getLocation());
+        if (!$this->emptyLastModified()) $calTask->setLastModified($this->getLastModified());
+        if (!$this->emptyOrganizer()) $calTask->setOrganizer($this->getOrganizer());
+        $calTask->setPercentComplete($this->getPercentComplete());
+        $calTask->setPriority($this->getPriority());
+        if (!$this->emptyRecurId()) $calTask->setRecurId($this->getRecurId());
+        $calTask->setSeq($this->getSeq());
+        $calTask->setStatus($this->getStatus());
+        if (!$this->emptySummary()) $calTask->setSummary($this->getSummary());
+        if (!$this->emptyRRule()) $calTask->setRRule($this->getRRule());
+        if (!$this->emptyDue()) $calTask->setDue($this->getDue());
+        if (!$this->emptyDuration()) $calTask->setDuration($this->getDuration());
+        if (!$this->emptyAttachs()) {
+            foreach ($this->getAttachs() as $attach) {
+                $calTask->addAttach($attach);
+            }
+        }
+        if (!$this->emptyAttendees()) {
+            foreach ($this->getAttendees() as $attendee) {
+                $calTask->addAttendee($attendee);
+            }
+        }
+        if (!$this->emptyCategories()) {
+            foreach ($this->getCategories() as $category) {
+                $calTask->addCategory($category);
+            }
+        }
+        if (!$this->emptyComment()) $calTask->setComment($this->getComment());
+        if (!$this->emptyContact()) $calTask->setContact($this->getContact());
+        if (!$this->emptyExDates()) {
+            foreach ($this->getExDates() as $exDate) {
+                $calTask->addExDate($exDate);
+            }
+        }
+        if (!$this->emptyRStatus()) {
+            foreach ($this->getRStatus() as $rStatus) {
+                $calTask->addRStatus($rStatus);
+            }
+        }
+        if (!$this->emptyRelated()) $calTask->setRelated($this->getRelated());
+        if (!$this->emptyResources()) {
+            foreach ($this->getResources() as $resource) {
+                $calTask->addResource($resource);
+            }
+        }
+        if (!$this->emptyRDates()) {
+            foreach ($this->getRDates() as $rDate) {
+                $calTask->addRDate($rDate);
+            }
+        }
+        if (!$this->emptyUrl()) $calTask->setUrl($this->getUrl());
+
+        return $calTask;
+    }
+
     /**
      * Get the value of uid
      */
@@ -168,6 +238,14 @@ class TaskICS
     public function getClasses(): ?array
     {
         return $this->classes;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyClasses(): bool
+    {
+        return empty($this->classes);
     }
 
     public function addClass(string $class)
@@ -251,6 +329,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDescription(): bool
+    {
+        return empty($this->description);
+    }
+
+    /**
      * Set the value of description
      */
     public function setDescription(?string $description): self
@@ -288,6 +374,14 @@ class TaskICS
     public function getLocation(): EventLocation
     {
         return $this->location;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyLocation(): bool
+    {
+        return empty($this->location);
     }
 
     /**
@@ -355,6 +449,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyPercentComplete(): bool
+    {
+        return empty($this->percentComplete);
+    }
+
+    /**
      * Set the value of percentComplete
      */
     public function setPercentComplete(int $percentComplete): self
@@ -391,6 +493,14 @@ class TaskICS
     public function getRecurId(): ?TaskRecurrenceId
     {
         return $this->recurId;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRecurId(): bool
+    {
+        return empty($this->recurId);
     }
 
     /**
@@ -454,6 +564,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptySummary(): bool
+    {
+        return empty($this->summary);
+    }
+
+    /**
      * set the Object or Summary of the Task
      *
      * @param string $summary
@@ -472,6 +590,14 @@ class TaskICS
     public function getAttendees(): ?Collection
     {
         return $this->attendees;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyAttendees(): bool
+    {
+        return empty($this->attendees);
     }
 
     /**
@@ -508,6 +634,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRRule(): bool
+    {
+        return empty($this->rrule);
+    }
+
+    /**
      * Set the value of rrule
      * @param EventRepetition $rrule
      * @return self
@@ -525,6 +659,14 @@ class TaskICS
     public function getDue(): ?DateTime
     {
         return $this->due;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyDue(): bool
+    {
+        return empty($this->due);
     }
 
     /**
@@ -547,6 +689,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDuration(): bool
+    {
+        return empty($this->duration);
+    }
+
+    /**
      * Set the value of duration
      * @param string $duration
      */
@@ -563,6 +713,14 @@ class TaskICS
     public function getAttachs(): ?Collection
     {
         return $this->attachs;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyAttachs(): bool
+    {
+        return empty($this->attachs);
     }
 
     /**
@@ -601,6 +759,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyComment(): bool
+    {
+        return empty($this->comment);
+    }
+
+    /**
      * Set the value of comment
      * @param string $comment
      * @return self
@@ -621,6 +787,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyContact(): bool
+    {
+        return empty($this->contact);
+    }
+
+    /**
      * Set the value of contact
      * @param Contact $contact
      * @return self
@@ -638,6 +812,14 @@ class TaskICS
     public function getExDates(): ?Collection
     {
         return $this->exDates;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyExDates(): bool
+    {
+        return empty($this->exDates);
     }
 
     /**
@@ -678,6 +860,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRStatus(): bool
+    {
+        return empty($this->rStatus);
+    }
+
+    /**
      * add 1 request-status to the Request Status of the Task
      * @param DateTime $rStatus
      * @return self
@@ -715,6 +905,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRelated(): bool
+    {
+        return empty($this->related);
+    }
+
+    /**
      * Set the value of related
      * @param string $related
      * @return self
@@ -732,6 +930,14 @@ class TaskICS
     public function getResources(): ?Collection
     {
         return $this->resources;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyResources(): bool
+    {
+        return empty($this->resources);
     }
 
     /**
@@ -772,6 +978,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRDates(): bool
+    {
+        return empty($this->rDates);
+    }
+
+    /**
      * add 1 recurrence-dateTime to the Recurrence-DateTimes of the Journal
      * @param DateTime $rDate
      * @return self
@@ -809,6 +1023,14 @@ class TaskICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyUrl(): bool
+    {
+        return empty($this->url);
+    }
+
+    /**
      * Set the value of url
      * @param string $url
      * @return self
@@ -826,6 +1048,14 @@ class TaskICS
     public function getCategories(): ?Collection
     {
         return $this->categories;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyCategories(): bool
+    {
+        return empty($this->categories);
     }
 
     /**

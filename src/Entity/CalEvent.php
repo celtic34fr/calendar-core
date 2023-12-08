@@ -587,6 +587,14 @@ class CalEvent
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyAttendees(): bool
+    {
+        return empty($this->attendees);
+    }
+
+    /**
      * add 1 attendee to the Attendees of the Event
      * @param Attendee $attendee
      * @return CalEvent

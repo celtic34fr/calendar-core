@@ -53,6 +53,33 @@ class FreeBusyICS
         if (!$calFreeBusy->emptyRStatus()) $this->setRStatus($calFreeBusy->getRStatus());
     }
 
+    public function toCalFreeBusy(CalFreeBusy $calFreeBusy = null): CalFreeBusy
+    {
+        if (!$calFreeBusy) $calFreeBusy = new CalFreeBusy();
+
+        $calFreeBusy->setUid($this->getUid());
+        $calFreeBusy->setDtStamp($this->getDtStamp());
+        if (!$this->emptyContact()) $calFreeBusy->setContact($this->getContact());
+        if (!$this->emptyDtStart()) $calFreeBusy->setDtStart($this->getDtStart());
+        if (!$this->emptyDtEnd()) $calFreeBusy->setDtEnd($this->getDtEnd());
+        if (!$this->emptyOrganizer()) $calFreeBusy->setOrganizer($this->getOrganizer());
+        if (!$this->emptyUrl()) $calFreeBusy->setUrl($this->getUrl());
+        if (!$this->emptyAttendees()) {
+            foreach ($this->getAttendees() as $attendee) {
+                $calFreeBusy->addAttendee($attendee);
+            }
+        }
+        if (!$this->emptyComment()) $calFreeBusy->setComment($this->getComment());
+        if (!$this->emptyFreesBusies()) {
+            foreach ($this->getFreesBusies() as $freebusy) {
+                $calFreeBusy->addFreeBusy($freebusy);
+            }
+        }
+        if (!$this->emptyRStatus()) $calFreeBusy->setRStatus($this->getRStatus());
+        
+        return $calFreeBusy;
+    }
+
 
     /**
      * Get the value of uid
@@ -104,6 +131,14 @@ class FreeBusyICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyContact(): bool
+    {
+        return empty($this->contact);
+    }
+
+    /**
      * Set the value of contact
      * @param Contact $contact
      * @return self
@@ -121,6 +156,14 @@ class FreeBusyICS
     public function getDtStart(): ?DateTime
     {
         return $this->dtStart;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyDtStart(): bool
+    {
+        return empty($this->dtStart);
     }
 
     /**
@@ -144,6 +187,14 @@ class FreeBusyICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDtEnd(): bool
+    {
+        return empty($this->dtEnd);
+    }
+
+    /**
      * Set the value of dtEnd
      * @param DateTime $dtEnd
      * @return self
@@ -161,6 +212,14 @@ class FreeBusyICS
     public function getOrganizer(): ?Organizer
     {
         return $this->organizer;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyOrganizer(): bool
+    {
+        return empty($this->organizer);
     }
 
     /**
@@ -184,6 +243,14 @@ class FreeBusyICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyUrl(): bool
+    {
+        return empty($this->url);
+    }
+
+    /**
      * Set the value of url
      * @param string $url
      * @return self
@@ -201,6 +268,14 @@ class FreeBusyICS
     public function getAttendees(): ?Collection
     {
         return $this->attendees;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyAttendees(): bool
+    {
+        return empty($this->attendees);
     }
 
     /**
@@ -237,6 +312,14 @@ class FreeBusyICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyComment(): bool
+    {
+        return empty($this->comment);
+    }
+
+    /**
      * Set the value of comment
      * @param string $comment
      * @return self
@@ -254,6 +337,14 @@ class FreeBusyICS
     public function getFreesBusies(): ?Collection
     {
         return $this->freesBusies;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyFreesBusies(): bool
+    {
+        return empty($this->freesBusies);
     }
 
     /**
@@ -292,6 +383,14 @@ class FreeBusyICS
     public function getRStatus(): ?string
     {
         return $this->rStatus;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRStatus(): bool
+    {
+        return empty($this->rStatus);
     }
 
     /**

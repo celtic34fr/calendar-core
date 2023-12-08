@@ -56,7 +56,7 @@ class CalJournal
     private ?Organizer $organizer = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
+    #[Assert\Type('string')]
     private ?TaskRecurrenceId $recur_id = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
@@ -74,7 +74,7 @@ class CalJournal
     private ?string $url = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
+    #[Assert\Type('string')]
     private ?EventRepetition $rrule;
 
     #[ORM\Column(type: Types::JSON, length: 64, nullable:false)]

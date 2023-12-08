@@ -212,30 +212,57 @@ class EventICS
     {
         if (!$calEvent) $calEvent = new CalEvent();
         $calEvent->setCreatedAt($this->getCreatedAt());
-        $calEvent->setLastupdated($this->getLastUpdatedAt());
-        $calEvent->setStartAt($this->getDateStart());
-        $calEvent->setEndAt($this->getDateEnd());
-        $calEvent->setSubject($this->getSubject());
-        $calEvent->setDetails($this->getDetails());
-        $calEvent->setNature($this->getNature());
-        $calEvent->setBgColor($this->getBgColor());
-        $calEvent->setBdColor($this->getBdColor());
-        $calEvent->setTxColor($this->getTxColor());
+        if (!$this->emptyLastupdatedAt()) $calEvent->setLastupdated($this->getLastUpdatedAt());
+        if (!$this->emptyDateStart()) $calEvent->setStartAt($this->getDateStart());
+        if (!$this->emptyDateEnd()) $calEvent->setEndAt($this->getDateEnd());
+        if (!$this->emptySubject()) $calEvent->setSubject($this->getSubject());
+        if (!$this->emptyDetails()) $calEvent->setDetails($this->getDetails());
+        if (!$this->emptyNature()) $calEvent->setNature($this->getNature());
+        if (!$this->emptyBgColor()) $calEvent->setBgColor($this->getBgColor());
+        if (!$this->emptyBdColor()) $calEvent->setBdColor($this->getBdColor());
+        if (!$this->emptyTxColor()) $calEvent->setTxColor($this->getTxColor());
         $calEvent->setAllday($this->isAllday());
         $calEvent->setStatus($this->getStatus());
-        foreach ($this->getAttendees() as $attendee) {
-            $calEvent->addAttendee($attendee);
+        if (!$this->emptyUid()) $calEvent->setUid($this->getUid());
+        if (!$this->emptyClasses()) $calEvent->setClasses($this->getClasses());
+        if (!$this->emptyLocation()) $calEvent->setLocation($this->getLocation());
+        if (!$this->emptyTimezone()) $calEvent->setTimezone($this->getTimezone());
+        if (!$this->emptyFrequence()) $calEvent->setFrequence($this->getFrequence());
+        if (!$this->emptyAttendees()) {
+            foreach ($this->getAttendees() as $attendee) {
+                $calEvent->addAttendee($attendee);
+            }
         }
-        $calEvent->setUid($this->getUid());
-        $calEvent->setLocation($this->getLocation());
-        $calEvent->setTimezone($this->getTimezone());
-        $calEvent->setFrequence($this->getFrequence());
         if (!$this->emptyOrganizer()) $calEvent->setOrganizer($this->getOrganizer());
         if (!$this->emptyAlarms()) {
             foreach ($this->getAlarms() as $alarm) {
                 $calEvent->addAlarm($alarm);
             }
         }
+        if (!$this->emptyDtStamp()) $calEvent->setDtStamp($this->getDtStamp());
+        if (!$this->emptyPriority()) $calEvent->setPriority($this->getPriority());
+        if (!$this->emptySeq()) $calEvent->setSeq($this->getSeq());
+        if (!$this->emptyTransp()) $calEvent->setTransp($this->getTransp());
+        if (!$this->emptyUrl()) $calEvent->setUrl($this->getUrl());
+        if (!$this->emptyRecurId()) $calEvent->setRecurId($this->getRecurId());
+        if (!$this->emptyDuration()) $calEvent->setDuration($this->getDuration());
+        if (!$this->emptyAttachs()) {
+            foreach ($this->getAttachs() as $attach) {
+                $calEvent->addAttach($attach);
+            }
+        }
+        if (!$this->emptyCategories()) {
+            foreach ($this->getCategories() as $category) {
+                $calEvent->addCategory($category);
+            }
+        }
+        if (!$this->emptyContact()) $calEvent->setContact($this->getContact());
+        if (!$this->emptyExDate()) $calEvent->setExDate($this->getExDate());
+        if (!$this->emptyRStatus()) $calEvent->setRStatus($this->getRStatus());
+        if (!$this->emptyRelated()) $calEvent->setRelated($this->getRelated());
+        if (!$this->emptyResources()) $calEvent->setResources($this->getResources());
+        if (!$this->emptyRDate()) $calEvent->setRDate($this->getRDate());
+
         return $calEvent;
     }
 
@@ -280,6 +307,9 @@ class EventICS
         return $this->lastupdated_at;
     }
 
+    /**
+     * @return boolean
+     */
     public function emptyLastupdatedAt(): bool
     {
         return empty($this->lastupdated_at);
@@ -317,6 +347,9 @@ class EventICS
         return $this->dateStart;
     }
 
+    /**
+     * @return boolean
+     */
     public function emptyDateStart(): bool
     {
         return empty($this->dateStart);        
@@ -355,6 +388,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDateEnd(): bool
+    {
+        return empty($this->dateEnd);
+    }
+
+    /**
      * set date when End the Event
      * @param array|DateTime|string $dateEnd
      * @return EventICS|bool
@@ -387,6 +428,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptySubject(): bool
+    {
+        return empty($this->subject);
+    }
+
+    /**
      * set the Object or Subject of the Event
      *
      * @param string $subject
@@ -408,6 +457,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDetails(): bool
+    {
+        return empty($this->details);
+    }
+
+    /**
      * set the Deatils of th Event
      * @param string $details
      * @return EventICS
@@ -425,6 +482,14 @@ class EventICS
     public function getNature(): ?Parameter
     {
         return$this->nature;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyNature(): bool
+    {
+        return empty($this->nature);
     }
 
     /**
@@ -456,6 +521,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyBgColor(): bool
+    {
+        return empty($this->bg_color);
+    }
+
+    /**
      * set the Custom backgroundColor associate at the Event
      * @param string|null $bg_color
      * @return EventICS
@@ -476,6 +549,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyBdColor(): bool
+    {
+        return empty($this->bd_color);
+    }
+
+    /**
      * set the Custom BorderColor associate at the Event
      * @param string|null $bd_color
      * @return EventICS
@@ -493,6 +574,14 @@ class EventICS
     public function getTxColor(): ?string
     {
         return $this->tx_color;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyTxColor(): bool
+    {
+        return empty($this->tx_color);
     }
 
     /**
@@ -559,6 +648,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyAttendees(): bool
+    {
+        return empty($this->attendees);
+    }
+
+    /**
      * add one Person concerned by the Event
      * @param Attendee $attendee
      * @return EventICS
@@ -592,6 +689,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyUid(): bool
+    {
+        return empty($this->uid);
+    }
+
+    /**
      * set the Unique Identifier associate at the Event
      * @param string $uid
      * @return EventICS
@@ -609,6 +714,14 @@ class EventICS
     public function getClasses(): ?string
     {
         return $this->classes;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyClasses(): bool
+    {
+        return empty($this->classes);
     }
 
     /**
@@ -632,6 +745,14 @@ class EventICS
     public function getLocation(): ?EventLocation
     {
         return $this->location;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyLocation(): bool
+    {
+        return empty($this->location);
     }
 
     /**
@@ -674,59 +795,6 @@ class EventICS
             $this->timezone = $timezone;
         } 
         return $this;
-    }
-
-        /**
-     * extract date from line in ICS file
-     * @param string|array $eventDate
-     * @param string $fuseau
-     * @return DateTime
-     */
-    private function extractDate(mixed $eventDate, string $fuseau): DateTimeImmutable
-    {
-        /**
-         * format possible des dates :
-         * 2014-06-12T20:00:00
-         * 20140619T072445Z
-         * array => VALUE / value => valeur à traiter : 20150211 / 20131220T130000
-         * 
-         * 1403086496 (timerstamp ?) ds DAYLIGHT bloc
-         * 19700329T020000 das DAYLIGHT / STANDARD bloc
-         */
-        if (is_array($eventDate)) {
-            /** recherche/extraction fuseau horaire local si trouvé sinon fuseau horaire global */
-            $fuseau = array_key_exists('TZID', $eventDate) ? $eventDate['TZID'] : $fuseau;
-            $value = $eventDate['VALUE'];
-        } else {
-            $value = $eventDate;
-        }
-        /** tranformation de la date pour obtenir un format : (YmdHis) */
-        $value = trim($value);
-        $value = str_replace(" ", "", $value);
-        $value = str_replace("-", "", $value);
-        $value = str_replace(":", "", $value);
-        $value = str_replace("T", "", $value);
-        $value = str_replace("Z", "", $value);
-        if ($fuseau) { // si $fuseau non vide => gestion du fuseau horaine local / global
-            $timezone = new DateTimeZone($fuseau);
-            $dtStart = DateTimeImmutable::createFromFormat('YmdHis', $value, $timezone);
-        } else { // heure du système
-            $dtStart = DateTimeImmutable::createFromFormat('YmdHis', $value);
-        }
-        return $dtStart;
-    }
-
-
-    private function extractDateMutable(mixed $eventDate, string $fuseau)
-    {
-        if (empty($fuseau)) {
-            $dateTime = new DateTime();
-            $dateTime->setTimestamp($this->extractDate($eventDate, $fuseau)->getTimestamp());
-        } else {
-            $dateTime = new DateTime('', $this->extractDate($eventDate, $fuseau)->getTimezone());
-            $dateTime->setTimestamp($this->extractDate($eventDate, $fuseau)->getTimestamp());
-        }
-        return $dateTime;
     }
 
     private function formatAttendee(array $attendee): Attendee
@@ -799,6 +867,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyFrequence(): bool
+    {
+        return empty($this->frequence);
+    }
+    
+    /**
      * Set the value of frequence
      * @param array $rrule
      * @param ?string $globalTimezone
@@ -868,7 +944,10 @@ class EventICS
         return $this->alarms;
     }
 
-    public function emptyAlarms()
+    /**
+     * @return boolean
+     */
+    public function emptyAlarms(): bool
     {
         return empty($this->alarms);
     }
@@ -899,8 +978,10 @@ class EventICS
 
     /**
      * Set the value of alarms
+     * @param Collection $alarms
+     * @return self
      */
-    public function setAlarms(?Collection $alarms): self
+    public function setAlarms(Collection $alarms): self
     {
         $this->alarms = $alarms;
 
@@ -914,6 +995,14 @@ class EventICS
     public function getDtStamp(): ?DateTime
     {
         return $this->dtStamp;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyDtStamp(): bool
+    {
+        return empty($this->dtStamp);
     }
 
     /**
@@ -937,6 +1026,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyPriority(): bool
+    {
+        return empty($this->priority);
+    }
+
+    /**
      * Set the value of priority
      * @param string $priority
      * @return self
@@ -954,6 +1051,14 @@ class EventICS
     public function getSeq(): ?int
     {
         return $this->seq;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptySeq(): bool
+    {
+        return empty($this->seq);
     }
 
     /**
@@ -977,6 +1082,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyTransp(): bool
+    {
+        return empty($this->transp);
+    }
+
+    /**
      * Set the value of transp
      * @param string $transp
      * @return self
@@ -994,6 +1107,14 @@ class EventICS
     public function getUrl(): ?string
     {
         return $this->url;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyUrl(): bool
+    {
+        return empty($this->url);
     }
 
     /**
@@ -1017,6 +1138,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRecurId(): bool
+    {
+        return empty($this->recurId);
+    }
+
+    /**
      * Set the value of recurId
      * @param string $recurId
      * @return self
@@ -1037,6 +1166,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDuration(): bool
+    {
+        return empty($this->duration);
+    }
+
+    /**
      * Set the value of duration
      * @param string $duration
      * @return self
@@ -1054,6 +1191,14 @@ class EventICS
     public function getAttachs(): ?Collection
     {
         return $this->attachs;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyAttachs(): bool
+    {
+        return empty($this->attachs);
     }
 
     /**
@@ -1084,11 +1229,19 @@ class EventICS
 
     /**
      * get the Categories of the Event
-     * @return Collection<int, array>|null
+     * @return Collection<int, string>|null
      */
     public function getCategories(): ?Collection
     {
         return $this->categories;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyCategories(): bool
+    {
+        return empty($this->categories);
     }
 
     /**
@@ -1127,6 +1280,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyContact(): bool
+    {
+        return empty($this->contact);
+    }
+
+    /**
      * Set the value of contact
      * @param Contact $contact
      * @return self
@@ -1144,6 +1305,14 @@ class EventICS
     public function getExDate(): ?DateTime
     {
         return $this->exDate;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyExDate(): bool
+    {
+        return empty($this->exDate);
     }
 
     /**
@@ -1167,6 +1336,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRStatus(): bool
+    {
+        return empty($this->rStatus);
+    }
+
+    /**
      * Set the value of rStatus
      * @param string $rStatus
      * @return self
@@ -1184,6 +1361,14 @@ class EventICS
     public function getRelated(): ?string
     {
         return $this->related;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRelated(): bool
+    {
+        return empty($this->related);
     }
 
     /**
@@ -1207,6 +1392,14 @@ class EventICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyResources(): bool
+    {
+        return empty($this->resources);
+    }
+
+    /**
      * Set the value of resources
      * @param string $resources
      * @return self
@@ -1219,11 +1412,19 @@ class EventICS
 
     /**
      * Get the value of rDate
-     * @return DateTiome|null
+     * @return DateTime|null
      */
     public function getRDate(): ?DateTime
     {
         return $this->rDate;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRDate(): bool
+    {
+        return empty($this->rDate);
     }
 
     /**
@@ -1235,5 +1436,58 @@ class EventICS
     {
         $this->rDate = $rDate;
         return $this;
+    }
+
+    /**
+     * extract date from line in ICS file
+     * @param string|array $eventDate
+     * @param string $fuseau
+     * @return DateTime
+     */
+    private function extractDate(mixed $eventDate, string $fuseau): DateTimeImmutable
+    {
+        /**
+         * format possible des dates :
+         * 2014-06-12T20:00:00
+         * 20140619T072445Z
+         * array => VALUE / value => valeur à traiter : 20150211 / 20131220T130000
+         * 
+         * 1403086496 (timerstamp ?) ds DAYLIGHT bloc
+         * 19700329T020000 das DAYLIGHT / STANDARD bloc
+         */
+        if (is_array($eventDate)) {
+            /** recherche/extraction fuseau horaire local si trouvé sinon fuseau horaire global */
+            $fuseau = array_key_exists('TZID', $eventDate) ? $eventDate['TZID'] : $fuseau;
+            $value = $eventDate['VALUE'];
+        } else {
+            $value = $eventDate;
+        }
+        /** tranformation de la date pour obtenir un format : (YmdHis) */
+        $value = trim($value);
+        $value = str_replace(" ", "", $value);
+        $value = str_replace("-", "", $value);
+        $value = str_replace(":", "", $value);
+        $value = str_replace("T", "", $value);
+        $value = str_replace("Z", "", $value);
+        if ($fuseau) { // si $fuseau non vide => gestion du fuseau horaine local / global
+            $timezone = new DateTimeZone($fuseau);
+            $dtStart = DateTimeImmutable::createFromFormat('YmdHis', $value, $timezone);
+        } else { // heure du système
+            $dtStart = DateTimeImmutable::createFromFormat('YmdHis', $value);
+        }
+        return $dtStart;
+    }
+
+
+    private function extractDateMutable(mixed $eventDate, string $fuseau)
+    {
+        if (empty($fuseau)) {
+            $dateTime = new DateTime();
+            $dateTime->setTimestamp($this->extractDate($eventDate, $fuseau)->getTimestamp());
+        } else {
+            $dateTime = new DateTime('', $this->extractDate($eventDate, $fuseau)->getTimezone());
+            $dateTime->setTimestamp($this->extractDate($eventDate, $fuseau)->getTimestamp());
+        }
+        return $dateTime;
     }
 }

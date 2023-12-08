@@ -105,6 +105,61 @@ class JournalICS
         }
     }
 
+    public function toCalJournal(CalJournal $calJourn = null): CalJournal
+    {
+        if (!$calJourn) $calJourn = new CalJournal();
+
+        $calJourn->setUid($this->getUid());
+        $calJourn->setDtStamp($this->getDtStamp());
+        if (!$this->emptyClasses()) $calJourn->setClasses($this->getClasses());
+        if (!$this->emptyCreated()) $calJourn->setCreated($this->getCreated());
+        if (!$this->emptyDtStart()) $calJourn->setDtStart($this->getDtStart());
+        if (!$this->emptyLastMod()) $calJourn->setLastModified($this->getlastmod());
+        if (!$this->emptyOrganizer()) $calJourn->setOrganizer($this->getOrganizer());
+        if (!$this->emptyRecurId()) $calJourn->setRecurId($this->getRecurId());
+        $calJourn->setSeq($this->getSeq());
+        $calJourn->setStatus($this->getStatus());
+        if (!$this->emptySummary()) $calJourn->setSummary($this->getSummary());
+        if (!$this->emptyUrl()) $calJourn->setUrl($this->getUrl());
+        if (!$this->emptyRRule()) $calJourn->setRRule($this->getRRule());
+        if (!$this->emptyAttachs()) {
+            foreach ($this->getAttachs() as $attach) {
+                $calJourn->addAttach($attach);
+            }
+        }
+        if (!$this->emptyAttendees()) {
+            foreach ($this->getAttendees() as $attendee) {
+                $calJourn->addAttendee($attendee);
+            }
+        }
+        if (!$this->emptyCategories()) {
+            foreach ($this->getCategories() as $category) {
+                $calJourn->addCategory($category);
+            }
+        }
+        if (!$this->emptyComment()) $calJourn->setComment($this->getComment());
+        if (!$this->emptyContact()) $calJourn->setContact($this->getContact());
+        if (!$this->emptyDescription()) $calJourn->setDescription($this->getDescription());
+        if (!$this->emptyExDates()) {
+            foreach ($this->getExDates() as $exDate) {
+                $calJourn->addExDate($exDate);
+            }
+        }
+        if (!$this->emptyRelated()) $calJourn->setRelated($this->getRelated());
+        if (!$this->emptyRDates()) {
+            foreach ($this->getRDates() as $rDate) {
+                $calJourn->addRDate($rDate);
+            }
+        }
+        if (!$this->emptyRStatus()) {
+            foreach ($this->getRStatus() as $rStatus) {
+                $calJourn->addRStatus($rStatus);
+            }
+        }
+
+        return $calJourn;
+    }
+
     /**
      * Get the value of uid
      * @return string
@@ -155,6 +210,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyClasses(): bool
+    {
+        return empty($this->classes);
+    }
+
+    /**
      * set the value of classes
      * @param string $classes
      * @return self|bool
@@ -178,6 +241,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyCreated(): bool
+    {
+        return empty($this->created);
+    }
+
+    /**
      * Set the value of created
      * @param DateTime|null
      */
@@ -194,6 +265,14 @@ class JournalICS
     public function getDtStart(): ?DateTime
     {
         return $this->dtStart;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyDtStart(): bool
+    {
+        return empty($this->dtStart);
     }
 
     /**
@@ -217,6 +296,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyLastMod(): bool
+    {
+        return empty($this->lastMod);
+    }
+
+    /**
      * Set the value of dtStart
      */
     public function setLastMod(?DateTime $lastMod): self
@@ -232,6 +319,14 @@ class JournalICS
     public function getOrganizer(): ?Organizer
     {
         return $this->organizer;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyOrganizer(): bool
+    {
+        return empty($this->organizer);
     }
 
     /**
@@ -252,6 +347,14 @@ class JournalICS
     public function getRecurId(): ?TaskRecurrenceId
     {
         return $this->recurId;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRecurId(): bool
+    {
+        return empty($this->recurId);
     }
 
     /**
@@ -319,6 +422,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptySummary(): bool
+    {
+        return empty($this->summary);
+    }
+
+    /**
      * Set the value of summary
      * @param string $summary
      * @return self
@@ -336,6 +447,14 @@ class JournalICS
     public function getUrl(): ?string
     {
         return $this->url;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyUrl(): bool
+    {
+        return empty($this->url);
     }
 
     /**
@@ -360,6 +479,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRRule(): bool
+    {
+        return empty($this->rrule);
+    }
+
+    /**
      * Set the value of rrule
      * @param EventRepetition $rrule
      * @return self
@@ -377,6 +504,14 @@ class JournalICS
     public function getAttachs(): ?Collection
     {
         return $this->attachs;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyAttachs(): bool
+    {
+        return empty($this->attachs);
     }
 
     /**
@@ -413,6 +548,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyAttendees(): bool
+    {
+        return empty($this->attendees);
+    }
+
+    /**
      * add one Person concerned by the Event
      * @param Attendee $attendee
      * @return self
@@ -443,6 +586,14 @@ class JournalICS
     public function getCategories(): ?Collection
     {
         return $this->categories;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyCategories(): bool
+    {
+        return empty($this->categories);
     }
 
     /**
@@ -483,6 +634,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyComment(): bool
+    {
+        return empty($this->comment);
+    }
+
+    /**
      * Set the value of comment
      * @param string $comment
      * @return self
@@ -500,6 +659,14 @@ class JournalICS
     public function getContact(): ?Contact
     {
         return $this->contact;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyContact(): bool
+    {
+        return empty($this->contact);
     }
 
     /**
@@ -523,6 +690,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyDescription(): bool
+    {
+        return empty($this->description);
+    }
+
+    /**
      * Set the value of description
      * @param string $description
      * @return self
@@ -540,6 +715,14 @@ class JournalICS
     public function getExDates(): ?Collection
     {
         return $this->exDates;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyExDates(): bool
+    {
+        return empty($this->exDates);
     }
 
     /**
@@ -580,6 +763,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRelated(): bool
+    {
+        return empty($this->related);
+    }
+
+    /**
      * Set the value of related
      * @param string $related
      * @return self
@@ -597,6 +788,14 @@ class JournalICS
     public function getRDates(): ?Collection
     {
         return $this->rDates;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function emptyRDates(): bool
+    {
+        return empty($this->rDates);
     }
 
     /**
@@ -637,6 +836,14 @@ class JournalICS
     }
 
     /**
+     * @return boolean
+     */
+    public function emptyRStatus(): bool
+    {
+        return empty($this->rStatus);
+    }
+
+    /**
      * add 1 request-status to the Request Status of the Journal
      * @param DateTime $rStatus
      * @return self
@@ -651,14 +858,14 @@ class JournalICS
 
     /**
      * remove 1 request-status if exist in Request Status of the Journal
-     * @param DateTime $r_status
+     * @param DateTime $rStatus
      * @return self|bool
      */
-    public function removeRStatus(DateTime $r_status): mixed
+    public function removeRStatus(DateTime $rStatus): mixed
     {
-        if (in_array($r_status, $this->r_status)) {
-            $idx = array_search($r_status, $this->r_status);
-            unset($this->r_status[$idx]);
+        if (in_array($rStatus, $this->rStatus)) {
+            $idx = array_search($rStatus, $this->rStatus);
+            unset($this->rStatus[$idx]);
             return $this;
         }
         return false;
