@@ -6,12 +6,22 @@ use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalFreeBusy;
 use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
+use Celtic34fr\CalendarCore\Traits\Model\ExtractDateTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatAttendeeTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatContactTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatOrganizerTrait;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 
 class FreeBusyICS
 {
+    use ExtractDateTrait;
+    use FormatAttendeeTrait;
+    use FormatOrganizerTrait;
+    use FormatContactTrait;
+    
     private EntityManagerInterface $entityManager;
 
     private string              $uid;                   //
@@ -26,11 +36,14 @@ class FreeBusyICS
     private ?Collection         $attendees = null;      //
     private ?string             $comment = null;        //
     private ?array              $freesBusies = null;    //
-    private ?string             $rStatus = null;        //
+    private ?array              $rStatus = null;        // *
     
     public function __construct(EntityManagerInterface $entityManager, CalFreeBusy $calFreeBusy = null)
     {
+
         $this->entityManager = $entityManager;
+
+        $this->attendees = new ArrayCollection();
 
         $this->setUid($calFreeBusy->getUid());
         $this->setDtStamp($calFreeBusy->getDtStamp());
@@ -50,7 +63,70 @@ class FreeBusyICS
                 $this->addFreeBusy($value);
             }
         }
-        if (!$calFreeBusy->emptyRStatus()) $this->setRStatus($calFreeBusy->getRStatus());
+        if (!$calFreeBusy->emptyRStatus()) {
+            foreach ($calFreeBusy->getRStatus() as $rStatus) {
+                $this->addRStatus($rStatus);
+            }
+        }
+}
+
+    public function buildFromArray(array $calArray, string $globalFuseau = null): self
+    {
+        /** initialisatio du fuseau horaire local au global */
+        $globalTimezone = $globalTimezone ?? date_default_timezone_get();
+
+        $this->setUid($calArray['UID']);
+        $this->setDtStamp($calArray["DTSTAMP"]);
+
+        $contact = array_key_exists('CONTACT', $calArray) ? $calArray['CONTACT'] : [];
+        if ($contact) {
+            $fbContact = $this->formatContact($contact);
+            $this->setContact($fbContact);
+        }
+
+        if (array_key_exists("DTSTART", $calArray)){
+            $dtStart = $this->extractDateMutable($calArray['DTSTART'], $globalTimezone);
+            $this->setDtStart($dtStart);
+        }
+        if (array_key_exists("DTEND", $calArray)){
+            $dtEnd = $this->extractDateMutable($calArray['DTEND'], $globalTimezone);
+            $this->setDtEnd($dtEnd);
+        }
+
+
+        $organizer = array_key_exists('ORGANIZER', $calArray) ? $calArray['ORGANIZER'] : [];
+        if ($organizer) {
+            $taskOrganizer = $this->formatOrganizer($organizer);
+            $this->setOrganizer($taskOrganizer);
+        }
+
+        if (array_key_exists("URL", $calArray)) $this->setUrl($calArray["URL"]);
+
+        $attendees = array_key_exists('ATTENDEE', $calArray) ? $calArray['ATTENDEE'] : null;
+        if ($attendees) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($attendees as $attendee) {
+                $this->addAttendee($this->formatAttendee($attendee));
+            }
+        }
+        if (array_key_exists("COMMENT", $calArray)) $this->setComment($calArray["COMMENT"]);
+
+        $freesBusies = array_key_exists('FREEBUSY', $calArray) ? $calArray['FREEBUSY'] : null;
+        if ($freesBusies) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($freesBusies as $freebusy) {
+                $this->addFreeBusy($freebusy);
+            }
+        }
+        $rStatus = array_key_exists('RSTATUS', $calArray) ? $calArray['RSTATUS'] : null;
+        if ($rStatus) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($rStatus as $item) {
+                $this->addRStatus($item);
+            }
+        }
+
+        return $this;
     }
 
     public function toCalFreeBusy(CalFreeBusy $calFreeBusy = null): CalFreeBusy
@@ -75,7 +151,11 @@ class FreeBusyICS
                 $calFreeBusy->addFreeBusy($freebusy);
             }
         }
-        if (!$this->emptyRStatus()) $calFreeBusy->setRStatus($this->getRStatus());
+        if (!$this->emptyRStatus()) {
+            foreach ($this->getRStatus() as $rStatus) {
+                $calTask->addRStatus($rStatus);
+            }
+        }
         
         return $calFreeBusy;
     }
@@ -377,10 +457,10 @@ class FreeBusyICS
     }
 
     /**
-     * Get the value of rStatus
-     * @return string|null
+     * get the Request Status of the Task
+     * @return Collection<int, DateTime>|null
      */
-    public function getRStatus(): ?string
+    public function getRStatus(): ?Collection
     {
         return $this->rStatus;
     }
@@ -394,13 +474,30 @@ class FreeBusyICS
     }
 
     /**
-     * Set the value of rStatus
-     * @param string $rStatus
+     * add 1 request-status to the Request Status of the Task
+     * @param DateTime $rStatus
      * @return self
      */
-    public function setRStatus(string $rStatus): self
+    public function addRStatus(DateTime $rStatus): self
     {
-        $this->rStatus = $rStatus;
+        if (!in_array($rStatus, $this->rStatus)) {
+            $this->rStatus[] = $rStatus;
+        }
         return $this;
+    }
+
+    /**
+     * remove 1 request-status if exist in Request Status of the Task
+     * @param DateTime $rStatus
+     * @return self|bool
+     */
+    public function removeRStatus(DateTime $rStatus): mixed
+    {
+        if (in_array($rStatus, $this->rStatus)) {
+            $idx = array_search($rStatus, $this->rStatus);
+            unset($this->rStatus[$idx]);
+            return $this;
+        }
+        return false;
     }
 }

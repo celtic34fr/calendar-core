@@ -6,22 +6,38 @@ use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalTask;
 use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
+use Celtic34fr\CalendarCore\Enum\ClassificationEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\TaskRecurrenceId;
+use Celtic34fr\CalendarCore\Traits\Model\ExtractDateTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatAttendeeTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatContactTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatLocationTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatOrganizerTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatRRuleTrait;
 use DateTime;
+use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 
 class TaskICS
 {
+    use ExtractDateTrait;
+    use FormatAttendeeTrait;
+    use FormatOrganizerTrait;
+    use FormatContactTrait;
+    use FormatRRuleTrait;
+    use FormatLocationTrait;
+
     private EntityManagerInterface $entityManager;
 
     private string              $uid;                   // *
     private DateTime            $dtStamp;               // *
 
-    private ?array              $classes = null;        // *
+    private ?string             $classification = null; // *
     private ?DateTime           $completed = null;      // *
     private ?DateTime           $created = null;        // *
     private ?string             $description = null;    // *
@@ -56,13 +72,16 @@ class TaskICS
     {
         $this->entityManager = $entityManager;
 
+        $this->setClassification(ClassificationEnums::Public->_toString());
+        $this->setStatus(StatusEnums::NeedsAction->_toString());
         $this->attachs = new ArrayCollection();
+        $this->attendees = new ArrayCollection();
 
         if ($calTask) {
             $this->setUid($calTask->getUid());
             $this->setDtStamp($calTask->getDtStamp());
 
-            if (!$calTask->emptyClasses()) $this->setClasses($calTask->getClasses());
+            if (!$calTask->emptyClassification()) $this->setClassification($calTask->getClassication());
             if (!$calTask->emptyCompleted()) $this->setCompleted($calTask->getCompleted());
             if (!$calTask->emptyCreated()) $this->setCreated($calTask->getCreated());
             if (!$calTask->emptyDescription()) $this->setDescription($calTask->getDescription());
@@ -128,17 +147,134 @@ class TaskICS
         }
     }
 
+    public function buildFromArray(array $calArray, string $globalTimezone = null): self
+    {
+        /** initialisatio du fuseau horaire local au global */
+        $globalTimezone = $globalTimezone ?? date_default_timezone_get();
+
+        $this->setUid($calArray['UID']);
+        $this->setDtStamp($calArray["DTSTAMP"]);
+
+        if (array_key_exists("CLASS", $calArray)) $this->setClassification($calArray["CLASS"]);
+        if (array_key_exists("COMPLETED", $calArray)) $this->setCompleted($calArray["COMPLETED"]);
+
+        if (array_key_exists("CREATED", $calArray)) {
+            $created = $this->extractDateMutable($calArray['CREATED'], $globalTimezone);
+            $this->setCreated($created);
+        }
+        if (array_key_exists("DESCRIPTION", $calArray)) $this->setDescription($calArray["DESCRIPTION"]);
+
+        if (array_key_exists("DTSTART", $calArray)){
+            $dtStart = $this->extractDateMutable($calArray['DTSTART'], $globalTimezone);
+            $this->setDtStart($dtStart);
+        }
+
+        $location = array_key_exists('LOCATION', $calArray) ? $calArray['LOCATION'] : null;
+        $geo = array_key_exists("GEO", $calArray) ? $calArray["GEO"] : null;
+        $location = $this->formatLocation($location, $geo);
+        if ($location) {
+            $this->setLocation($location);
+        }
+
+        if (array_key_exists("LAST-MODIFIED", $calArray)){
+            $lastModified = $this->extractDateMutable($calArray['LAST-MODIFIED'], $globalTimezone);
+            $this->setLastModified($lastModified);
+        }
+
+        $organizer = array_key_exists('ORGANIZER', $calArray) ? $calArray['ORGANIZER'] : [];
+        if ($organizer) {
+            $taskOrganizer = $this->formatOrganizer($organizer);
+            $this->setOrganizer($taskOrganizer);
+        }
+
+        if (array_key_exists("PERCENT-COMPLETE", $calArray)) $this->setPercentComplete((int) $calArray["PERCENT-COMPLETE"]);
+        if (array_key_exists("PRIORITY", $calArray)) $this->setPriority((int) $calArray["PRIORITY"]);
+        if (array_key_exists("RECURID", $calArray)) $this->setRecurId($calArray["RECURID"]);
+        if (array_key_exists("SEQ", $calArray)) $this->setSeq((int) $calArray["seq"]);
+        if (array_key_exists("STATUS", $calArray)) $this->setStatus($calArray["STATUS"]);
+        if (array_key_exists("SUMMARY", $calArray)) $this->setSummary($calArray["SUMMARY"]);
+
+        /** -> intégration de la règle de répétition si présente */
+        $rrule = array_key_exists('RRULE', $calArray) ? $calArray['RRULE'] : [];
+        if ($rrule) {
+            $rruleItem = $this->formatRRule($rrule);
+            $this->setRRule($rruleItem);
+        }
+
+        if (array_key_exists("DUE", $calArray)) $this->setDue($calArray["DUE"]);
+        if (array_key_exists("DURATION", $calArray)) $this->setDuration($calArray["DURATION"]);
+
+        $attachs = array_key_exists('ATTACH', $calArray) ? $calArray['ATTACH'] : null;
+        if ($attachs) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($attachs as $attach) {
+                $this->addAttach($attach);
+            }
+        }
+        $attendees = array_key_exists('ATTENDEE', $calArray) ? $calArray['ATTENDEE'] : null;
+        if ($attendees) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($attendees as $attendee) {
+                $this->addAttendee($this->formatAttendee($attendee));
+            }
+        }
+        $categories = array_key_exists('CATEGORY', $calArray) ? $calArray['CATEGORY'] : null;
+        if ($categories) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($categories as $category) {
+                $this->addCategory($category);
+            }
+        }
+
+        if (array_key_exists("COMMENT", $calArray)) $this->setComment($calArray["COMMENT"]);
+
+        $contact = array_key_exists('CONTACT', $calArray) ? $calArray['CONTACT'] : [];
+        if ($contact) {
+            $fbContact = $this->formatContact($contact);
+            $this->setContact($fbContact);
+        }
+
+        $exDates = array_key_exists('EXDATE', $calArray) ? $calArray['EXDATE'] : null;
+        if ($exDates) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($exDates as $exDate) {
+                $this->addExDate($exDate);
+            }
+        }
+        $rStatus = array_key_exists('RSTATUS', $calArray) ? $calArray['RSTATUS'] : null;
+        if ($rStatus) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($rStatus as $item) {
+                $this->addRStatus($item);
+            }
+        }
+        if (array_key_exists("RELATED", $calArray)) $this->setRelated($calArray["RELATED"]);
+        $resources = array_key_exists('RESOURCES', $calArray) ? $calArray['RESOURCES'] : null;
+        if ($resources) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($resources as $resource) {
+                $this->addResource($resource);
+            }
+        }
+        $rDates = array_key_exists('RDATES', $calArray) ? $calArray['RDATES'] : null;
+        if ($rDates) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($rDates as $rDate) {
+                $this->addRDate($rDate);
+            }
+        }
+        if (array_key_exists("URL", $calArray)) $this->setUrl($calArray["URL"]);
+
+        return $this;
+    }
+
     public function toCalTask(CalTask $calTask = null): CalTask
     {
         if (!$calTask) $calTask = new CalTask();
 
         $calTask->setUid($this->getUid());
         $calTask->setDtStamp($this->getDtStamp());
-        if (!$this->emptyClasses()) {
-            foreach ($this->getClasses() as $class) {
-                $calTask->addClass($class);
-            }
-        }
+        if (!$this->emptyClassification()) $calTask->setClassification($this->getClassification());
         if (!$this->emptyCompleted()) $calTask->setCompleted($this->getCompleted());
         if (!$this->emptyCreated()) $calTask->setCreated($this->getCreated());
         if (!$this->emptyDescription()) $calTask->setDescription($this->getDescription());
@@ -233,46 +369,27 @@ class TaskICS
     }
 
     /**
-     * Get the value of classes
+     * Get the value of classification
      */
-    public function getClasses(): ?array
+    public function getClassification(): ?string
     {
-        return $this->classes;
+        return $this->classification;
     }
 
     /**
      * @return boolean
      */
-    public function emptyClasses(): bool
+    public function emptyClassification(): bool
     {
-        return empty($this->classes);
-    }
-
-    public function addClass(string $class)
-    {
-        if (!in_array($class, $this->classes)) {
-            $this->classes[] = $class;
-            return $this;
-        }
-        return false;
-    }
-
-    public function removeClass(string $class)
-    {
-        if (in_array($class, $this->classes)) {
-            $key = array_search($class, $this->classes);
-            unset($this->classes[$key]);
-            return $this;
-        }
-        return false;
+        return empty($this->classification);
     }
 
     /**
-     * Set the value of classes
+     * Set the value of classification
      */
-    public function setClasses(array $classes): self
+    public function setClassification(string $classification): self
     {
-        $this->classes = $classes;
+        $this->classification = $classification;
         return $this;
     }
 

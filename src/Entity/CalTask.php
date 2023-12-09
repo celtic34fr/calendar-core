@@ -4,6 +4,7 @@ namespace Celtic34fr\CalendarCore\Entity;
 
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\Organizer;
+use Celtic34fr\CalendarCore\Enum\ClassificationEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
@@ -20,6 +21,37 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table('cal_tasks')]
 /**
  * Class CalTask : Calendar Task
+ * 
+ * - uid                :
+ * - dtStamp            :
+ * - classification     :
+ * - completed          :
+ * - created            :
+ * - description        :
+ * - dtstart            :
+ * - location           :
+ * - lastModified       :
+ * - organizer          :
+ * - percentComplete    :
+ * - priority           :
+ * - recurId            :
+ * - seq                :
+ * - status             :
+ * - summary            :
+ * - rrule              :
+ * - due                :
+ * - duration           :
+ * - attachs            :
+ * - attendees          :
+ * - categories         :
+ * - comment            :
+ * - contact            :
+ * - ex_dates           :
+ * - r_status           :
+ * - related            :
+ * - resources          :
+ * - r_dates            :
+ * - url                :
  */
 class CalTask
 {
@@ -34,10 +66,10 @@ class CalTask
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     #[Assert\DateTime]
     private DateTime $dtStamp;
-    
-    #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
-    private ?array $classes = null;
+
+    #[ORM\Column(type: Types::TEXT, length: 255, nullable:true)]
+    #[Assert\Type('string')]
+    private ?string $classification = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
@@ -73,7 +105,7 @@ class CalTask
     private int $priority = 0;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
+    #[Assert\Type('string')]
     private ?TaskRecurrenceId $recurId = null; // TODO gest structure
 
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
@@ -147,6 +179,7 @@ class CalTask
     
     public function __construct()
     {
+        $this->setClassification(ClassificationEnums::Public->_toString());
         $this->setStatus(StatusEnums::NeedsAction->_toString());
         $this->attachs = new ArrayCollection();
         $this->attendees = new ArrayCollection();
@@ -202,58 +235,34 @@ class CalTask
     }
 
     /**
-     * Get the value of classes
-     * @return array|null
+     * Get the value of classification
+     * @return string|null
      */
-    public function getClasses(): ?array
+    public function getClassication(): ?array
     {
-        return $this->classes;
+        return $this->classification;
     }
 
     /**
      * @return boolean
      */
-    public function emptyClasses(): bool
+    public function emptyClassification(): bool
     {
-        return empty($this->classes);
-    }
-
-    /**
-     * @param string $class
-     * @return self|bool
-     */
-    public function addClass(string $class): mixed
-    {
-        if (!in_array($class, $this->classes)) {
-            $this->classes[] = $class;
-            return $this;
-        }
-        return false;
-    }
-
-    /**
-     * @param string $class
-     * @return self|bool
-     */
-    public function removeClass(string $class): mixed
-    {
-        if (in_array($class, $this->classes)) {
-            $key = array_search($class, $this->classes);
-            unset($this->classes[$key]);
-            return $this;
-        }
-        return false;
+        return empty($this->classification);
     }
 
     /**
      * Set the value of class
-     * @param array $classes
-     * @return self
+     * @param string $classification
+     * @return self|bool
      */
-    public function setClasses(array $classes): self
+    public function setClassification(string $classification): mixed
     {
-        $this->classes = $classes;
-        return $this;
+        if (ClassificationEnums::isValid($classification)) {
+            $this->classification = $classification;
+            return $this;
+        }
+        return false;
     }
 
     /**

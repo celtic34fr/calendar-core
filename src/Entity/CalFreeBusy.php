@@ -66,9 +66,9 @@ class CalFreeBusy
     #[Assert\Type('array')]
     private ?array $frees_busies = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable:true)]
-    #[Assert\Type('string')]
-    private ?string $r_status = null; // TODO gest Structure
+    #[ORM\Column(type: Types::JSON, nullable:true)]
+    #[Assert\Type('array')]
+    private ?array $r_status = null; // TODO gest Structure
 
 
     public function __construct()
@@ -374,12 +374,11 @@ class CalFreeBusy
         return false;
     }
 
-
     /**
-     * Get the value of r_status
-     * @return string|null
+     * get the Request Status of the Journal
+     * @return Collection<int, DateTime>|null
      */
-    public function getRStatus(): ?string
+    public function getRStatus(): ?Collection
     {
         return $this->r_status;
     }
@@ -393,13 +392,30 @@ class CalFreeBusy
     }
 
     /**
-     * Set the value of r_status
-     * @param string $r_status
+     * add 1 request-status to the Request Status of the Journal
+     * @param DateTime $r_status
      * @return self
      */
-    public function setRStatus(?string $r_status): self
+    public function addRStatus(DateTime $r_status): self
     {
-        $this->r_status = $r_status;
+        if (!in_array($r_status, $this->r_status)) {
+            $this->r_status[] = $r_status;
+        }
         return $this;
+    }
+
+    /**
+     * remove 1 request-status if exist in Request Status of the Journal
+     * @param DateTime $r_status
+     * @return self|bool
+     */
+    public function removeRStatus(DateTime $r_status): mixed
+    {
+        if (in_array($r_status, $this->r_status)) {
+            $idx = array_search($r_status, $this->r_status);
+            unset($this->r_status[$idx]);
+            return $this;
+        }
+        return false;
     }
 }

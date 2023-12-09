@@ -5,7 +5,7 @@ namespace Celtic34fr\CalendarCore\Entity;
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
-use Celtic34fr\CalendarCore\Enum\ClassesEnums;
+use Celtic34fr\CalendarCore\Enum\ClassificationEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventAlarm;
 use Celtic34fr\CalendarCore\Model\EventLocation;
@@ -36,7 +36,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * - all_day        : top booléen indiquant si l'événement est en jour (true) ou en durée (false), à false par défaut
  * - status         : statut de l'événement
  * - uid            : UID associé à l'événement
- * - classes        : visibilité de l'événement (CLASS dans la norme RFC) : Privé, Public ou Confidentiel en base
+ * - classification : visibilité de l'événement (CLASS dans la norme RFC) : Privé, Public ou Confidentiel en base
  * - location       : précisiot de l'emplacement ou se déroule l'événement (objet EventLocation)
  * - timezone       : chaîne de caractère précisant le fuseau hpraire de référence pour l'événement
  * - frequence      : précise si renseigné, si lévénement doit êtrŒe répété et comment (RRULE componant)
@@ -132,7 +132,7 @@ class CalEvent
 
     #[ORM\Column(type: Types::TEXT, length: 255, nullable:true)]
     #[Assert\Type('string')]
-    private ?string $classes = null;
+    private ?string $classification = null;
 
     #[ORM\Column(type: Types::JSON, nullable:true)]
     #[Assert\Type('array')]
@@ -168,8 +168,8 @@ class CalEvent
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
     private ?string $priority = null;
 
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $seq = null;
+    #[ORM\Column(type: Types::INTEGER, nullable: false)]
+    private int $seq = 0;
 
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
     private ?string $transp = null;
@@ -215,7 +215,7 @@ class CalEvent
     public function __construct()
     {
         $this->setStatus(StatusEnums::NeedsAction->_toString());
-        $this->setClasses(ClassesEnums::Public->_toString());
+        $this->setClassification(ClassificationEnums::Public->_toString());
         $this->attendees = new ArrayCollection();
         $this->alarms = new ArrayCollection();
         $this->attachs = new ArrayCollection();
@@ -495,23 +495,23 @@ class CalEvent
     }
 
     /**
-     * Get the value of classes
+     * Get the value of Classification
      * @return string|null
      */
-    public function getClasses(): ?string
+    public function getClassification(): ?string
     {
-        return $this->classes;
+        return $this->classification;
     }
 
     /**
-     * set the value of classes
-     * @param string $classes
+     * set the value of Classification
+     * @param string $classification
      * @return CalEvent|bool
      */
-    public function setClasses(string $classes): mixed
+    public function setClassification(string $classification): mixed
     {
-        if (ClassesEnums::isValid($classes)) {
-            $this->classes = $classes;
+        if (ClassificationEnums::isValid($classification)) {
+            $this->classification = $classification;
             return $this;
         }
         return false;

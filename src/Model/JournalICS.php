@@ -6,8 +6,13 @@ use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\CalJournal;
 use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
-use Celtic34fr\CalendarCore\Enum\ClassesEnums;
+use Celtic34fr\CalendarCore\Enum\ClassificationEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
+use Celtic34fr\CalendarCore\Traits\Model\ExtractDateTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatAttendeeTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatContactTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatOrganizerTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatRRuleTrait;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,12 +20,18 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class JournalICS
 {
+    use ExtractDateTrait;
+    use FormatAttendeeTrait;
+    use FormatOrganizerTrait;
+    use FormatContactTrait;
+    use FormatRRuleTrait;
+
     private EntityManagerInterface $entityManager;
 
     private string              $uid;                   //
     private DateTime            $dtStamp;               //
 
-    private ?array              $classes = null;        //
+    private ?string             $classification = null; //
     private ?DateTime           $created = null;        //
     private ?DateTime           $dtStart = null;        //
     private ?DateTime           $lastMod = null;        //
@@ -48,61 +59,162 @@ class JournalICS
     {
         $this->entityManager = $entityManager;
 
-        $this->setClasses(ClassesEnums::Public->_toString());
+        $this->setClassification(ClassificationEnums::Public->_toString());
         $this->setStatus(StatusEnums::NeedsAction->_toString());
         $this->attachs = new ArrayCollection();
         $this->attendees = new ArrayCollection();
 
-        $this->setUid($calJourn->getUid());
-        $this->setDtStamp($calJourn->getDtStamp());
+        if ($calJourn) {
+            $this->setUid($calJourn->getUid());
+            $this->setDtStamp($calJourn->getDtStamp());
 
-        $this->setClasses($calJourn->getClasses());
-        if (!$calJourn->emptyCreated()) $this->setCreated($calJourn->getCreated());
-        if (!$calJourn->emptyDtStart()) $this->setDtStamp($calJourn->getDtStart());
-        if (!$calJourn->emptyLastModified()) $this->setLastMod($calJourn->getLastModified());
-        if (!$calJourn->emptyOrganizer()) $this->setOrganizer($calJourn->getOrganizer());
-        if (!$calJourn->emptyRecurId()) $this->setRecurId($calJourn->getRecurId());
-        $this->setSeq($calJourn->getSeq());
-        $this->setStatus($calJourn->getStatus());
-        if (!$calJourn->emptySummary()) $this->setSummary($calJourn->getSummary());
-        if (!$calJourn->emptyUrl()) $this->setUrl($calJourn->getUrl());
+            $this->setClassification($calJourn->getClassification());
+            if (!$calJourn->emptyCreated()) $this->setCreated($calJourn->getCreated());
+            if (!$calJourn->emptyDtStart()) $this->setDtStamp($calJourn->getDtStart());
+            if (!$calJourn->emptyLastModified()) $this->setLastMod($calJourn->getLastModified());
+            if (!$calJourn->emptyOrganizer()) $this->setOrganizer($calJourn->getOrganizer());
+            if (!$calJourn->emptyRecurId()) $this->setRecurId($calJourn->getRecurId());
+            $this->setSeq($calJourn->getSeq());
+            $this->setStatus($calJourn->getStatus());
+            if (!$calJourn->emptySummary()) $this->setSummary($calJourn->getSummary());
+            if (!$calJourn->emptyUrl()) $this->setUrl($calJourn->getUrl());
 
-        if (!$calJourn->emptyRRule()) $this->setRRule($calJourn->getRRule());
+            if (!$calJourn->emptyRRule()) $this->setRRule($calJourn->getRRule());
 
-        if (!$calJourn->emptyAttachs()) {
-            foreach ($calJourn->getAttachs() as $attach) {
+            if (!$calJourn->emptyAttachs()) {
+                foreach ($calJourn->getAttachs() as $attach) {
+                    $this->addAttach($attach);
+                }
+            }
+            if (!$calJourn->emptyAttendees()) {
+                foreach ($calJourn->getAttendees() as $attendee) {
+                    $this->addAttendee($attendee);
+                }
+            }
+            if (!$calJourn->emptyCategories()) {
+                foreach ($calJourn->getCategories() as $category) {
+                    $this->addCategory($category);
+                }
+            }
+            if (!$calJourn->emptyComment()) $this->setComment($calJourn->getComment());
+            if (!$calJourn->emptyContact()) $this->setContact($calJourn->getContact());
+            if (!$calJourn->emptyDescription()) $this->setDescription($calJourn->getDescription());
+            if (!$calJourn->emptyExDates()) {
+                foreach ($calJourn->getExDates() as $exDate) {
+                    $this->addExDate($exDate);
+                }
+            }
+            if (!$calJourn->emptyRelated()) $this->setRelated($calJourn->getRelated());
+            if (!$calJourn->emptyRDates()) {
+                foreach ($calJourn->getRDates() as $rDate) {
+                    $this->addRDate($rDate);
+                }
+            }
+            if (!$calJourn->emptyRStatus()) {
+                foreach ($calJourn->getRStatus() as $rStatus) {
+                    $this->addRStatus($rStatus);
+                }
+            }
+        }
+    }
+
+    public function buildFromArray(array $calArray, string $globalFuseau = null): JournalICS
+    {
+        /** initialisatio du fuseau horaire local au global */
+        $globalTimezone = $globalTimezone ?? date_default_timezone_get();
+
+        $this->setUid($calArray['UID']);
+        $this->setDtStamp($this->extractDateMutable($calArray["DTSTAMP"], $globalFuseau));
+
+        if (array_key_exists("CLASS", $calArray)) $this->setClassification($calArray["CLASS"]);
+        if (array_key_exists("CREATED", $calArray)) {
+            $created = $this->extractDateMutable($calArray['CREATED'], $globalTimezone);
+            $this->setCreated($created);
+        }
+        if (array_key_exists("DTSTART", $calArray)){
+            $dtStart = $this->extractDateMutable($calArray['DTSTART'], $globalTimezone);
+            $this->setDtStart($dtStart);
+        }
+
+        if (array_key_exists("LAST-MOD", $calArray)){
+            $lastModified = $this->extractDateMutable($calArray['LAST-MOD'], $globalTimezone);
+            $this->setLastMod($lastModified);
+        }
+
+        $organizer = array_key_exists('ORGANIZER', $calArray) ? $calArray['ORGANIZER'] : [];
+        if ($organizer) {
+            $taskOrganizer = $this->formatOrganizer($organizer);
+            $this->setOrganizer($taskOrganizer);
+        }
+
+        if (array_key_exists("RECURID", $calArray)) $this->setRecurId($calArray["RECURID"]);
+        if (array_key_exists("SEQ", $calArray)) $this->setSeq((int) $calArray["seq"]);
+        if (array_key_exists("STATUS", $calArray)) $this->setStatus($calArray["STATUS"]);
+        if (array_key_exists("SUMMARY", $calArray)) $this->setSummary($calArray["SUMMARY"]);
+        if (array_key_exists("URL", $calArray)) $this->setUrl($calArray["URL"]);
+
+        /** -> intégration de la règle de répétition si présente */
+        $rrule = array_key_exists('RRULE', $calArray) ? $calArray['RRULE'] : [];
+        if ($rrule) {
+            $rruleItem = $this->formatRRule($rrule);
+            $this->setRRule($rruleItem);
+        }
+
+        $attachs = array_key_exists('ATTACH', $calArray) ? $calArray['ATTACH'] : null;
+        if ($attachs) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($attachs as $attach) {
                 $this->addAttach($attach);
             }
         }
-        if (!$calJourn->emptyAttendees()) {
-            foreach ($calJourn->getAttendees() as $attendee) {
-                $this->addAttendee($attendee);
+        $attendees = array_key_exists('ATTENDEE', $calArray) ? $calArray['ATTENDEE'] : null;
+        if ($attendees) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($attendees as $attendee) {
+                $this->addAttendee($this->formatAttendee($attendee));
             }
         }
-        if (!$calJourn->emptyCategories()) {
-            foreach ($calJourn->getCategories() as $category) {
+        $categories = array_key_exists('CATEGORY', $calArray) ? $calArray['CATEGORY'] : null;
+        if ($categories) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($categories as $category) {
                 $this->addCategory($category);
             }
         }
-        if (!$calJourn->emptyComment()) $this->setComment($calJourn->getComment());
-        if (!$calJourn->emptyContact()) $this->setContact($calJourn->getContact());
-        if (!$calJourn->emptyDescription()) $this->setDescription($calJourn->getDescription());
-        if (!$calJourn->emptyExDates()) {
-            foreach ($calJourn->getExDates() as $exDate) {
+
+        if (array_key_exists("COMMENT", $calArray)) $this->setComment($calArray["COMMENT"]);
+
+        $contact = array_key_exists('CONTACT', $calArray) ? $calArray['CONTACT'] : [];
+        if ($contact) {
+            $fbContact = $this->formatContact($contact);
+            $this->setContact($fbContact);
+        }
+        if (array_key_exists("DESCRIPTION", $calArray)) $this->setDescription($calArray["DESCRIPTION"]);
+
+        $exDates = array_key_exists('EXDATE', $calArray) ? $calArray['EXDATE'] : null;
+        if ($exDates) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($exDates as $exDate) {
                 $this->addExDate($exDate);
             }
         }
-        if (!$calJourn->emptyRelated()) $this->setRelated($calJourn->getRelated());
-        if (!$calJourn->emptyRDates()) {
-            foreach ($calJourn->getRDates() as $rDate) {
+        if (array_key_exists("RELATED", $calArray)) $this->setRelated($calArray["RELATED"]);
+        $rDates = array_key_exists('RDATES', $calArray) ? $calArray['RDATES'] : null;
+        if ($rDates) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($rDates as $rDate) {
                 $this->addRDate($rDate);
             }
         }
-        if (!$calJourn->emptyRStatus()) {
-            foreach ($calJourn->getRStatus() as $rStatus) {
-                $this->addRStatus($rStatus);
+        $rStatus = array_key_exists('RSTATUS', $calArray) ? $calArray['RSTATUS'] : null;
+        if ($rStatus) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($rStatus as $item) {
+                $this->addRStatus($item);
             }
         }
+
+        return $this;
     }
 
     public function toCalJournal(CalJournal $calJourn = null): CalJournal
@@ -111,7 +223,7 @@ class JournalICS
 
         $calJourn->setUid($this->getUid());
         $calJourn->setDtStamp($this->getDtStamp());
-        if (!$this->emptyClasses()) $calJourn->setClasses($this->getClasses());
+        if (!$this->emptyClassification()) $calJourn->setClassification($this->getClassification());
         if (!$this->emptyCreated()) $calJourn->setCreated($this->getCreated());
         if (!$this->emptyDtStart()) $calJourn->setDtStart($this->getDtStart());
         if (!$this->emptyLastMod()) $calJourn->setLastModified($this->getlastmod());
@@ -201,31 +313,31 @@ class JournalICS
     }
 
     /**
-     * Get the value of classes
+     * Get the value of classification
      * @return string|null
      */
-    public function getClasses(): ?string
+    public function getClassification(): ?string
     {
-        return $this->classes;
+        return $this->classification;
     }
 
     /**
      * @return boolean
      */
-    public function emptyClasses(): bool
+    public function emptyClassification(): bool
     {
-        return empty($this->classes);
+        return empty($this->classification);
     }
 
     /**
-     * set the value of classes
-     * @param string $classes
+     * set the value of classification
+     * @param string $classification
      * @return self|bool
      */
-    public function setClasses(string $classes): mixed
+    public function setClassification(string $classification): mixed
     {
-        if (ClassesEnums::isValid($classes)) {
-            $this->classes = $classes;
+        if (ClassificationEnums::isValid($classification)) {
+            $this->classification = $classification;
             return $this;
         }
         return false;

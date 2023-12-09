@@ -8,64 +8,81 @@ use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use Celtic34fr\CalendarCore\EntityRedefine\ParameterCalEvent;
-use Celtic34fr\CalendarCore\Enum\ClassesEnums;
+use Celtic34fr\CalendarCore\Enum\ClassificationEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventAlarm;
 use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
-use Celtic34fr\ContactCore\Entity\Clientele;
-use Celtic34fr\ContactCore\Entity\CliInfos;
+use Celtic34fr\CalendarCore\Traits\Model\ExtractDateTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatAttendeeTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatContactTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatLocationTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatOrganizerTrait;
+use Celtic34fr\CalendarCore\Traits\Model\FormatRRuleTrait;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 
 class EventICS
 {
+    use ExtractDateTrait;
+    use FormatAttendeeTrait;
+    use FormatOrganizerTrait;
+    use FormatContactTrait;
+    use FormatRRuleTrait;
+    use FormatLocationTrait;
+
     private EntityManagerInterface $entityManager;
 
-    private DateTime            $created_at;        // *
-    private DateTime            $lastupdated_at;    // *
-    private DateTime            $dateStart;         // *
-    private DateTime            $dateEnd;           // *
-    private ?string             $subject = null;    // *
-    private ?string             $details = null;    // *
-    private ?Parameter          $nature = null;     //
-    private ?string             $bg_color = null;   //
-    private ?string             $bd_color = null;   //
-    private ?string             $tx_color = null;   //
-    private bool                $allday;            // *
-    private string              $status;            // *
-    private ?Collection         $attendees = null;  // *
-    private ?string             $uid = null;        // *
-    private ?string             $classes = null;    // *
-    private ?EventLocation      $location = null;   // *
-    private ?string             $timezone = null;   // *
-    private ?EventRepetition    $frequence = null;  // *
-    private ?Organizer          $organizer = null;  // *
-    private ?Collection         $alarms = null;     // *
+    private DateTime            $created_at;            // *
+    private DateTime            $lastupdated_at;        // *
+    private DateTime            $dateStart;             // *
+    private DateTime            $dateEnd;               // *
+    private ?string             $subject = null;        // *
+    private ?string             $details = null;        // *
+    private ?Parameter          $nature = null;         //
+    private ?string             $bg_color = null;       //
+    private ?string             $bd_color = null;       //
+    private ?string             $tx_color = null;       //
+    private bool                $allday;                // *
+    private string              $status;                // *
+    private ?Collection         $attendees = null;      // *
+    private ?string             $uid = null;            // *
+    private ?string             $classification = null; // *
+    private ?EventLocation      $location = null;       // *
+    private ?string             $timezone = null;       // *
+    private ?EventRepetition    $frequence = null;      // *
+    private ?Organizer          $organizer = null;      // *
+    private ?Collection         $alarms = null;         // *
 
-    private ?DateTime           $dtStamp = null;    //
-    private ?string             $priority = null;   //
-    private ?int                $seq = null;        //
-    private ?string             $transp = null;     //
-    private ?string             $url = null;        //
-    private ?string             $recurId = null;    //
-    private ?string             $duration = null;   //
-    private ?Collection         $attachs = null;    //
-    private ?Collection         $categories = null; //
-    private ?Contact            $contact = null;    //
-    private ?DateTime           $exDate = null;     //
-    private ?string             $rStatus = null;    //
-    private ?string             $related = null;    //
-    private ?string             $resources = null;  //
-    private ?DateTime           $rDate = null;      // 
+    private ?DateTime           $dtStamp = null;        //
+    private ?string             $priority = null;       //
+    private ?int                $seq = null;            //
+    private ?string             $transp = null;         //
+    private ?string             $url = null;            //
+    private ?string             $recurId = null;        //
+    private ?string             $duration = null;       //
+    private ?Collection         $attachs = null;        //
+    private ?Collection         $categories = null;     //
+    private ?Contact            $contact = null;        //
+    private ?DateTime           $exDate = null;         //
+    private ?string             $rStatus = null;        //
+    private ?string             $related = null;        //
+    private ?string             $resources = null;      //
+    private ?DateTime           $rDate = null;          // 
 
     public function __construct(EntityManagerInterface $entityManager, CalEvent $calEvent = null)
     {
         $this->entityManager = $entityManager;
+        $this->setClassification(ClassificationEnums::Public->_toString());
+        $this->setStatus(StatusEnums::NeedsAction->_toString());
+        $this->attendees = new ArrayCollection();
+        $this->alarms = new ArrayCollection();
+        $this->attachs = new ArrayCollection();
 
         if ($calEvent) {
             $this->setCreatedAt($calEvent->getCreatedAt());
@@ -124,10 +141,10 @@ class EventICS
      * @param string $globalTimezone
      * @return EventICS
      */
-    public function buildFromArray(array $calArray, string $globalTimezone): EventICS
+    public function buildFromArray(array $calArray, string $globalTimezone = null): EventICS
     {
         /** initialisatio du fuseau horaire local au global */
-        $fuseau = $globalTimezone;
+        $globalTimezone = $globalTimezone ?? date_default_timezone_get();
 
         $this->setUid($calArray['UID'] ?? null);
         $this->setSubject($calArray['SUMMARY'] ?? null);
@@ -135,13 +152,11 @@ class EventICS
         $this->setStatus(array_key_exists('STATUS', $calArray) ? $calArray['STATUS'] : "NEEDS-ACTION");
 
         $location = array_key_exists('LOCATION', $calArray) ? $calArray['LOCATION'] : null;
-        if ($location && is_string($location)) $location = ["LOCATION" => $location];
-        $location = new EventLocation([
-            'LOCATION' => array_key_exists('LOCATION', $location) ? $location['LOCATION'] : null,
-            'LATITUDE' => array_key_exists('LATITUDE', $location) ? $location['LATITUDE'] : null,
-            'LONGITUDE' => array_key_exists('LONGITUDE', $location) ? $location['LONGITURE'] : null,
-        ]);
-        $this->setLocation($location);
+        $geo = array_key_exists("GEO", $calArray) ? $calArray['GEO'] : null;
+        $location = $this->formatLocation($location, $geo);
+        if ($location) {
+            $this->setLocation($location);
+        }
 
         $dtStart = $this->extractDateMutable($calArray['DTSTART'], $globalTimezone);
         $this->setDateStart($dtStart);
@@ -177,26 +192,15 @@ class EventICS
         /** -> intégration de la règle de répétition si présente */
         $rrule = array_key_exists('RRULE', $calArray) ? $calArray['RRULE'] : [];
         if ($rrule) {
-            $rruleItem = new EventRepetition();
-            $rruleItem->setPeriod($rrule["FREQ"]);
-            if (array_key_exists("INTERVAL", $rrule)) $rruleItem->setInterval((int) $rrule["INTERVAL"]);
-            if (array_key_exists("COUNT", $rrule)) $rruleItem->setCount($rrule["COUNT"]);
-            if (array_key_exists("WKST", $rrule)) $rruleItem->setWeekStartDay($rrule["WKST"]);
-
-            /** integration of BY* componant */
-            if (array_key_exists("BYSECOND", $rrule)) $rruleItem->setByFreqSecond($rrule["BYSECOND"]);
-            if (array_key_exists("BYMINUTE", $rrule)) $rruleItem->setByFreqMinute($rrule["BYMINUTE"]);
-            if (array_key_exists("BYHOUR", $rrule)) $rruleItem->setByFreqHour($rrule["BYHOUR"]);
-            if (array_key_exists("BYDAY", $rrule)) $rruleItem->setByFreqDay($rrule["BYDAY"]);
-            if (array_key_exists("BYMONTHDAY", $rrule)) $rruleItem->setByFreqMonthDay($rrule["BYMONTHDAY"]);
-            if (array_key_exists("BYYEARDAY", $rrule)) $rruleItem->setByFreqYearDay($rrule["BYYEARDAY"]);
-            if (array_key_exists("BYWEEKNO", $rrule)) $rruleItem->setByFreqWeekNo($rrule["BYWEEKNO"]);
-            if (array_key_exists("BYMONTH", $rrule)) $rruleItem->setByFreqMonth($rrule["BYMONTH"]);
-            if (array_key_exists("BYSETPOS", $rrule)) $rruleItem->setByFreqSetPos($rrule["BYSETPOS"]);
+            $rruleItem = $this->formatRRule($rrule);
             $this->setFrequence($rruleItem);
         }
 
-        if (array_key_exists("ORGANIZER", $calArray)) $this->setOrganizer($calArray['Organizer']);
+        $organizer = array_key_exists('ORGANIZER', $calArray) ? $calArray['ORGANIZER'] : [];
+        if ($organizer) {
+            $taskOrganizer = $this->formatOrganizer($organizer);
+            $this->setOrganizer($taskOrganizer);
+        }
 
         if (array_key_exists("VALARM", $calArray)) {
             foreach ($$calArray["VALARM"] as $valarm) {
@@ -204,6 +208,45 @@ class EventICS
                 $this->addAlarm($alarm);
             }
         }
+
+        if (array_key_exists("STATUS", $calArray)) $this->setNature($calArray["STATUS"]);
+        if (array_key_exists("CLASS", $calArray)) $this->setClassification($calArray["CLASS"]);
+
+        $dtStamp = array_key_exists('DTSTAMP', $calArray) ? $this->extractDate($calArray['DTSTAMP'], $globalTimezone) : new DateTime('now');
+        $this->setDtStamp($dtStamp);
+        
+        if (array_key_exists("PRIORITY", $calArray)) $this->setPriority($calArray["PRIORITY"]);
+        $this->setSeq(array_key_exists("SEQUENCE", $calArray) ? (int) $calArray["SEQUENCE"] : 0);
+        if (array_key_exists("TRANSP", $calArray)) $this->setTransp($calArray["TRANSP"]);
+        if (array_key_exists("URL", $calArray)) $this->setUrl($calArray["URL"]);
+        if (array_key_exists("RECURID", $calArray)) $this->setRecurId($calArray["RECURID"]);
+
+        $attachs = array_key_exists('ATTACH', $calArray) ? $calArray['ATTACH'] : null;
+        if ($attachs) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($attachs as $attach) {
+                $this->addAttach($attach);
+            }
+        }
+        $categories = array_key_exists('CATEGORY', $calArray) ? $calArray['CATEGORY'] : null;
+        if ($categories) {
+            /** traitement du tableau des personnes concernées par l'événement */
+            foreach ($categories as $category) {
+                $this->addCategory($category);
+            }
+        }
+
+        $contact = array_key_exists('CONTACT', $calArray) ? $calArray['CONTACT'] : [];
+        if ($contact) {
+            $fbContact = $this->formatContact($contact);
+            $this->setContact($fbContact);
+        }
+
+        if (array_key_exists("EXDATE", $calArray)) $this->setExDate($calArray["EXDATE"]);
+        if (array_key_exists("RSTATUS", $calArray)) $this->setRStatus($calArray["RSTATUS"]);
+        if (array_key_exists("RELATED", $calArray)) $this->setRelated($calArray["RELATED"]);
+        if (array_key_exists("RESOURCES", $calArray)) $this->setResources($calArray["RESOURCES"]);
+        if (array_key_exists("RDATE", $calArray)) $this->setRDate($calArray["RDATE"]);
 
         return $this;
     }
@@ -224,7 +267,7 @@ class EventICS
         $calEvent->setAllday($this->isAllday());
         $calEvent->setStatus($this->getStatus());
         if (!$this->emptyUid()) $calEvent->setUid($this->getUid());
-        if (!$this->emptyClasses()) $calEvent->setClasses($this->getClasses());
+        if (!$this->emptyClassification()) $calEvent->setClassification($this->getClassification());
         if (!$this->emptyLocation()) $calEvent->setLocation($this->getLocation());
         if (!$this->emptyTimezone()) $calEvent->setTimezone($this->getTimezone());
         if (!$this->emptyFrequence()) $calEvent->setFrequence($this->getFrequence());
@@ -280,7 +323,7 @@ class EventICS
      * @param array|DateTime|string $created_at
      * @return EventICS|bool
      */
-    public function setCreatedAt(DateTime $created_at): self
+    public function setCreatedAt(mixed $created_at): self
     {
         if (is_array($created_at)) {
             $fuseau = $created_at['TZID'];
@@ -320,7 +363,7 @@ class EventICS
      * @param array|DateTime|string $lastupdated_at
      * @return EventICS|bool
      */
-    public function setLastupdatedAt(DateTime $lastupdated_at): self
+    public function setLastupdatedAt(mixed $lastupdated_at): self
     {
         if (is_array($lastupdated_at)) {
             $fuseau = $lastupdated_at['TZID'];
@@ -708,31 +751,31 @@ class EventICS
     }
 
     /**
-     * get the classes of the Event
+     * get the classification of the Event
      * @return string|null
      */
-    public function getClasses(): ?string
+    public function getClassification(): ?string
     {
-        return $this->classes;
+        return $this->classification;
     }
 
     /**
      * @return boolean
      */
-    public function emptyClasses(): bool
+    public function emptyClassification(): bool
     {
-        return empty($this->classes);
+        return empty($this->classification);
     }
 
     /**
-     * set the classes of the Event
-     * @param string|null $classes
+     * set the classification of the Event
+     * @param string|null $classification
      * @return EventICS|bool
      */
-    public function setClasses(string $classes): mixed
+    public function setClassification(string $classification): mixed
     {
-        if (ClassesEnums::isValid($classes)) {
-            $this->classes = $classes;
+        if (ClassificationEnums::isValid($classification)) {
+            $this->classification = $classification;
             return $this;
         }
         return false;
@@ -795,61 +838,6 @@ class EventICS
             $this->timezone = $timezone;
         } 
         return $this;
-    }
-
-    private function formatAttendee(array $attendee): Attendee
-    {
-        $attendee = new CliInfos;
-
-        /** recherche de la personne dans CliInfos / Clientele si existe */
-        $calAttendee = $this->entityManager->getRepository(Clientele::class)
-        ->findOneBy(['courriel' => $attendee['MAILTO']]);
-        if (!$calAttendee && array_key_exists('CN', $attendee) && !empty($attendee['CN'])) 
-            $calAttendee = $this->entityManager->getRepository(CliInfos::class)
-            ->findFullname($attendee['CN']);
-
-        // si la personne désignée n'existe pas dans CliInfo/Clientele : création en prospect
-        if (!$calAttendee) {
-            $clientele = new Clientele();
-            $clientele->setCourriel($attendee['MAILTO']);
-            $clientele->setType(CustomerEnums::Prospect->_toString());
-            $this->entityManager->persist($clientele);
-
-            $attendee->setClient($clientele);
-            if (!array_key_exists('CN', $attendee) || empty($attendee['CN'])) {
-                $attendee->setNom(uniqid("Prospect"));
-            } else {
-                $names = explode(' ', $attendee['CN']);
-                if (empty($names[0])) {
-                    $attendee->setNom(uniqid("Prospect"));
-                } else {
-                    $attendee->setNom($names[0]);
-                    $attendee->setPrenom($names[1]);
-                }
-            }
-            $this->entityManager->persist($attendee);
-            $clientele->addCliInfos($attendee);
-        } else { // la personne existe => on a trouvé son email.
-            if ($calAttendee instanceof CliInfos) {
-                $attendee = $calAttendee->getClient();
-            } else {
-                /** @var Clientele $calAttendee */
-                if (!$calAttendee->isCliInfo(['fullname' => $attendee['CN']])) {
-                    $attendee->setClient($calAttendee);
-                    $names = explode(' ', $attendee['CN']);
-                    if (empty($names[0])) {
-                        $attendee->setNom(uniqid("Prospect"));
-                    } else {
-                        $attendee->setNom($names[0]);
-                        $attendee->setPrenom($names[1]);
-                    }
-                    $this->entityManager->persist($attendee);
-                    $calAttendee->addCliInfos($attendee);
-                }
-            }
-        }
-        $this->entityManager->flush();
-        return $attendee;
     }
 
     private function calcEndDate(DateTime $dtStart, string $duration) : DateTime
@@ -1436,58 +1424,5 @@ class EventICS
     {
         $this->rDate = $rDate;
         return $this;
-    }
-
-    /**
-     * extract date from line in ICS file
-     * @param string|array $eventDate
-     * @param string $fuseau
-     * @return DateTime
-     */
-    private function extractDate(mixed $eventDate, string $fuseau): DateTimeImmutable
-    {
-        /**
-         * format possible des dates :
-         * 2014-06-12T20:00:00
-         * 20140619T072445Z
-         * array => VALUE / value => valeur à traiter : 20150211 / 20131220T130000
-         * 
-         * 1403086496 (timerstamp ?) ds DAYLIGHT bloc
-         * 19700329T020000 das DAYLIGHT / STANDARD bloc
-         */
-        if (is_array($eventDate)) {
-            /** recherche/extraction fuseau horaire local si trouvé sinon fuseau horaire global */
-            $fuseau = array_key_exists('TZID', $eventDate) ? $eventDate['TZID'] : $fuseau;
-            $value = $eventDate['VALUE'];
-        } else {
-            $value = $eventDate;
-        }
-        /** tranformation de la date pour obtenir un format : (YmdHis) */
-        $value = trim($value);
-        $value = str_replace(" ", "", $value);
-        $value = str_replace("-", "", $value);
-        $value = str_replace(":", "", $value);
-        $value = str_replace("T", "", $value);
-        $value = str_replace("Z", "", $value);
-        if ($fuseau) { // si $fuseau non vide => gestion du fuseau horaine local / global
-            $timezone = new DateTimeZone($fuseau);
-            $dtStart = DateTimeImmutable::createFromFormat('YmdHis', $value, $timezone);
-        } else { // heure du système
-            $dtStart = DateTimeImmutable::createFromFormat('YmdHis', $value);
-        }
-        return $dtStart;
-    }
-
-
-    private function extractDateMutable(mixed $eventDate, string $fuseau)
-    {
-        if (empty($fuseau)) {
-            $dateTime = new DateTime();
-            $dateTime->setTimestamp($this->extractDate($eventDate, $fuseau)->getTimestamp());
-        } else {
-            $dateTime = new DateTime('', $this->extractDate($eventDate, $fuseau)->getTimezone());
-            $dateTime->setTimestamp($this->extractDate($eventDate, $fuseau)->getTimestamp());
-        }
-        return $dateTime;
     }
 }

@@ -5,12 +5,13 @@ namespace Celtic34fr\CalendarCore\Entity;
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\Contact;
 use Celtic34fr\CalendarCore\Entity\Organizer;
-use Celtic34fr\CalendarCore\Enum\ClassesEnums;
+use Celtic34fr\CalendarCore\Enum\ClassificationEnums;
 use Celtic34fr\CalendarCore\Enum\StatusEnums;
 use Celtic34fr\CalendarCore\Model\EventRepetition;
 use Celtic34fr\CalendarCore\Model\TaskRecurrenceId;
 use Celtic34fr\CalendarCore\Repository\CalJournalRepository;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -37,7 +38,7 @@ class CalJournal
     
     #[ORM\Column(type: Types::TEXT, nullable:true)]
     #[Assert\Type('string')]
-    private ?string $classes = null;
+    private ?string $classification = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
@@ -122,8 +123,10 @@ class CalJournal
 
     public function __construct()
     {
-        $this->setClasses(ClassesEnums::Public->_toString());
+        $this->setClassification(ClassificationEnums::Public->_toString());
         $this->setStatus(StatusEnums::NeedsAction->_toString());
+        $this->attachs = new ArrayCollection();
+        $this->attendees = new ArrayCollection();
     }
 
     /**
@@ -176,28 +179,28 @@ class CalJournal
     }
 
     /**
-     * Get the value of classes
+     * Get the value of classification
      * @return string|null
      */
-    public function getClasses(): ?string
+    public function getClassification(): ?string
     {
-        return $this->classes;
+        return $this->classification;
     }
 
-    public function emptyClasses(): bool
+    public function emptyClassification(): bool
     {
-        return empty($this->classes);
+        return empty($this->classification);
     }
 
     /**
-     * set the value of classes
-     * @param string $classes
+     * set the value of classification
+     * @param string $classification
      * @return self|bool
      */
-    public function setClasses(string $classes): mixed
+    public function setClassification(string $classification): mixed
     {
-        if (ClassesEnums::isValid($classes)) {
-            $this->classes = $classes;
+        if (ClassificationEnums::isValid($classification)) {
+            $this->classification = $classification;
             return $this;
         }
         return false;
