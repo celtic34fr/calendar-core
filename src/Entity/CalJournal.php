@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CalJournalRepository::class)]
-#[ORM\Table('cal_tasks')]
+#[ORM\Table('cal_journals')]
 /**
  * Class CalJournal : Calendar Journal
  */
@@ -84,8 +84,8 @@ class CalJournal
 
     #[ORM\ManyToMany(targetEntity: Attendee::class)]
     #[ORM\JoinColumn(name: 'attendee_id', referencedColumnName: 'id', nullable: true)]
-    #[ORM\JoinTable(name: 'event_attendees')]
-    #[ORM\InverseJoinColumn(name: 'event_id', referencedColumnName: 'id')]
+    #[ORM\JoinTable(name: 'journal_attendees')]
+    #[ORM\InverseJoinColumn(name: 'journal_id', referencedColumnName: 'id')]
     #[Assert\Type('string')]
     private ?Collection $attendees = null;
 

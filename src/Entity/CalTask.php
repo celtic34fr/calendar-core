@@ -136,8 +136,8 @@ class CalTask
 
     #[ORM\ManyToMany(targetEntity: Attendee::class)]
     #[ORM\JoinColumn(name: 'attendee_id', referencedColumnName: 'id', nullable: true)]
-    #[ORM\JoinTable(name: 'event_attendees')]
-    #[ORM\InverseJoinColumn(name: 'event_id', referencedColumnName: 'id')]
+    #[ORM\JoinTable(name: 'task_attendees')]
+    #[ORM\InverseJoinColumn(name: 'task_id', referencedColumnName: 'id')]
     #[Assert\Type('string')]
     private ?Collection $attendees = null;
 

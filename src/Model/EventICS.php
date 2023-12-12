@@ -44,7 +44,6 @@ class EventICS
     private DateTime            $dateEnd;               // *
     private ?string             $subject = null;        // *
     private ?string             $details = null;        // *
-    private ?Parameter          $nature = null;         //
     private ?string             $bg_color = null;       //
     private ?string             $bd_color = null;       //
     private ?string             $tx_color = null;       //
@@ -91,7 +90,6 @@ class EventICS
             $this->setDateEnd($calEvent->getEndAt());
             $this->setSubject($calEvent->getSubject());
             $this->setDetails($calEvent->getDetails());
-            $this->setNature($calEvent->getNature());
             $this->setBgColor($calEvent->getBgColor());
             $this->setBdColor($calEvent->getBdColor());
             $this->setTxColor($calEvent->getTxColor());
@@ -164,7 +162,7 @@ class EventICS
         $created = array_key_exists('CREATED', $calArray) ? $this->extractDate($calArray['CREATED'], $globalTimezone) : new DateTime('now');
         $this->setCreatedAt($created);
         $lastUpdated = array_key_exists('LAST-MODIFIED', $calArray) ? $this->extractDate($calArray['LAST-MODIFIED'], $globalTimezone) : null;
-        $this->setLastupdatedAt($lastUpdated);
+        if ($lastUpdated) $this->setLastupdatedAt($lastUpdated);
 
         /** date de fin événement : DTEND ou DURATION ou rien */
         if (array_key_exists('DURATION', $calArray) && !array_key_exists('DTEND', $calArray)) {
@@ -203,13 +201,12 @@ class EventICS
         }
 
         if (array_key_exists("VALARM", $calArray)) {
-            foreach ($$calArray["VALARM"] as $valarm) {
+            foreach ($calArray["VALARM"] as $valarm) {
                 $alarm = new EventAlarm($valarm);
                 $this->addAlarm($alarm);
             }
         }
 
-        if (array_key_exists("STATUS", $calArray)) $this->setNature($calArray["STATUS"]);
         if (array_key_exists("CLASS", $calArray)) $this->setClassification($calArray["CLASS"]);
 
         $dtStamp = array_key_exists('DTSTAMP', $calArray) ? $this->extractDate($calArray['DTSTAMP'], $globalTimezone) : new DateTime('now');
@@ -260,7 +257,6 @@ class EventICS
         if (!$this->emptyDateEnd()) $calEvent->setEndAt($this->getDateEnd());
         if (!$this->emptySubject()) $calEvent->setSubject($this->getSubject());
         if (!$this->emptyDetails()) $calEvent->setDetails($this->getDetails());
-        if (!$this->emptyNature()) $calEvent->setNature($this->getNature());
         if (!$this->emptyBgColor()) $calEvent->setBgColor($this->getBgColor());
         if (!$this->emptyBdColor()) $calEvent->setBdColor($this->getBdColor());
         if (!$this->emptyTxColor()) $calEvent->setTxColor($this->getTxColor());
@@ -363,7 +359,7 @@ class EventICS
      * @param array|DateTime|string $lastupdated_at
      * @return EventICS|bool
      */
-    public function setLastupdatedAt(mixed $lastupdated_at): self
+    public function setLastupdatedAt(mixed $lastupdated_at): mixed
     {
         if (is_array($lastupdated_at)) {
             $fuseau = $lastupdated_at['TZID'];
@@ -416,7 +412,8 @@ class EventICS
         }
         $this->dateStart = $dateStart;
         if (!empty($dateStart->getTimezone())) {
-            $this->setTimezone($dateStart->getTimezone());
+            $timezoneTmp = $dateStart->getTimezone()->getName();
+            $this->setTimezone($timezoneTmp);
         }
         return $this;
     }
@@ -515,42 +512,6 @@ class EventICS
     public function setDetails(string $details): self
     {
         $this->details = $details;
-        return $this;
-    }
-
-    /**
-     * get the value of Nature of the Event
-     * @return Parameter|null
-     */
-    public function getNature(): ?Parameter
-    {
-        return$this->nature;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function emptyNature(): bool
-    {
-        return empty($this->nature);
-    }
-
-    /**
-     * get the value of Nature's Description of the Event
-     * @return string|null
-     */
-    public function getNatureDescription(): mixed
-    {
-        $nature = new ParameterCalEvent($this->nature);
-        return $nature->getDescription();
-    }
-
-    /**
-     * set the value of Nature of The Event (object Parameter, table Parameter)
-     */
-    public function setNature(Parameter $nature): self
-    {
-        $this->nature = $nature;
         return $this;
     }
 

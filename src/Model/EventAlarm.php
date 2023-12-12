@@ -7,10 +7,16 @@ use Celtic34fr\CalendarCore\Enum\AlarmTypeEnums;
 
 class EventAlarm
 {
-    private string $action;
-    private string $trigger;
+    const RELATED_BEFORE = "START";
+    const RELATED_AFTER = "END";
 
+    private string $action;
+
+    //private array $trigger;
+    private string $related = "START";
     private ?string $duration = null;
+    private ?DateTime $absDatetime = null;
+
     private ?int $repeat = null;
 
     private ?array $attach = null;
@@ -26,7 +32,7 @@ class EventAlarm
     
     public function setByArray(array $valarm)
     {
-        $this->setAction($valarm["ACTION"]);
+        $this->setAction($valarm["ACTION"] ?? AlarmTypeEnums::Display);
         $this->setTrigger($valarm["TRIGGER"]);
 
         switch($valarm["ACTION"]) {
@@ -79,21 +85,48 @@ class EventAlarm
 
     /**
      * Get the value of trigger
-     * @return string
+     * @return array
      */
-    public function getTrigger(): string
+    public function getTrigger(): array
     {
-        return $this->trigger;
+        return [
+            "RELATED" => $this->getRelated(),
+            "DURATION" => $this->getDuration(),
+            "DATE-TIME" => $this->getAbsDatetime()
+        ];
     }
 
     /**
      * Set the value of trigger
-     * @param string $trigger
+     * @param array $trigger
      * @return self
      */
-    public function setTrigger(string $trigger): self
+    public function setTrigger(array $trigger): self
     {
-        $this->trigger = $trigger;
+        $this->setRelated(self::RELATED_BEFORE);
+        if (array_key_exists("RELATED", $trigger)) $this->setRelated($trigger["RELATED"]);
+        if (array_key_exists("DURATION", $trigger)) $this->setDuration($trigger["DURATION"]);
+        if (array_key_exists("DATE-TIME", $trigger)) $this->setAbsDatetime($trigger["DATE-TIME"]);
+
+        return $this;
+    }
+
+    /**
+     * Get the value of related in trigger
+     * @return string|null
+     */
+    public function getRelated(): ?string
+    {
+        return $this->related;
+    }
+
+    /**
+     * Set the value of related in trigger
+     * @param string $related
+     */
+    public function setRelated(string $related): self
+    {
+        $this->related = $related;
         return $this;
     }
 
@@ -113,6 +146,33 @@ class EventAlarm
     public function setDuration(string $duration): self
     {
         $this->duration = $duration;
+        return $this;
+    }
+
+    /**
+     * Get the value of absDatetime
+     * @return DateTime|null
+     */
+    public function getAbsDatetime(): ?DateTime
+    {
+        return $this->absDatetime;
+    }
+
+    /**
+     * Set the value of absDatetime
+     * @param DateTime|string $absDatetime
+     * @return self|bool
+     */
+    public function setAbsDatetime(mixed $absDatetime): self
+    {
+        if (is_string($absDatetime)) {
+            $absDatetime = DateTime::createFromFormat("Ymd\THis\Z", $absDatetime);
+            $this->absDatetime = $absDatetime;
+        } elseif ($absDatetime instanceof DateTime) {
+            $this->absDatetime = $absDatetime;
+        } else {
+            return false;
+        }
         return $this;
     }
 

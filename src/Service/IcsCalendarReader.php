@@ -109,14 +109,25 @@ class IcsCalendarReader
                         '&nbsp;',
                         "\t",
                         "\xc2\xa0", // Non-breaking space
-                    ), ' ', $line);
+                    ), ' ', $ligne);
 
                     $ligne = $this->cleanCharacters($ligne);
                 }
                 /** suppression des caractères non affichages (Room34CreativeServices) */
 
+                if ($strContinue) {
+                    $lignProcceds[sizeof($lignProcceds) - 1] = $ligne;
+                } else {
+                    $lignProcceds[] = $ligne;
+                }
+                $lastLign = $ligne;
+            }
+
+            while (!empty($lignProcceds)) {
+                $strContinue = false;
+                $lignProcced = array_shift($lignProcceds);
                 /** éclatement de la ligne en tokens / valeurs (Room34CreativeServices) */
-                $add     = $this->keyValueFromString($ligne);
+                $add     = $this->keyValueFromString($lignProcced);
                 $keyword = $add[0];
                 $values  = $add[1]; // May be an array containing multiple values
                 if (!is_array($values)) {
@@ -134,11 +145,11 @@ class IcsCalendarReader
                 $values = array_reverse($values);
                 /** éclatement de la ligne en tokens / valeurs (Room34CreativeServices) */
 
-                if (!$this->startWith($ligne, 'BEGIN')) {
-                    $item = $this->extractItem($ligne);
+                if (!$this->startWith($lignProcced, 'BEGIN')) {
+                    $item = $this->extractItem($lignProcced);
                     $this->ical = array_merge($this->ical, $item);
                 } else {
-                    $blocName = substr($ligne, strpos($ligne, ':') + 1);
+                    $blocName = substr($lignProcced, strpos($lignProcced, ':') + 1);
 
                     /** appel sous-routine pour travail du bloc d'information
                      * @param array $lignes tableau des lignes sans la ligne de début de bloc
@@ -146,7 +157,7 @@ class IcsCalendarReader
                      * @return array lignes restante après extraction du bloc
                      * @return array bloc à insérer dans ical à la clé blocName
                      */
-                    list($lignes, $bloc) = $this->extractBloc($lignes, $blocName);
+                    list($lignProcceds, $bloc) = $this->extractBloc($lignProcceds, $blocName);
                     if ($blocName == "VEVENT") {
                         $key = 0;
                         $current = [];
@@ -227,7 +238,7 @@ class IcsCalendarReader
                     $extract[$start] = ["VALUE" => $item[1]];
                 } else {
                     $elt = explode("=", $elt[1]);
-                    $extract[$start] = [$elt[0] => $elt[1], "VALUE" => $item[1]];
+                    $extract[$start] = [strtoupper($elt[0]) => $elt[1], "VALUE" => $item[1]];
                 }
                 break;
             case $this->startWith($ligne, "DESCRIPTION"):
@@ -241,7 +252,7 @@ class IcsCalendarReader
                 $tmp = array_shift($params);
                 if ($params) {
                     $elt = explode("=", $params[0]);
-                    $extract[$elt[0]] = $elt[1];
+                    $extract[strtoupper($elt[0])] = $elt[1];
                 }
 
                 if (sizeof($item) == 3) {
@@ -258,7 +269,7 @@ class IcsCalendarReader
                     $elt = explode("=", $elt);
                     $extract[strtoupper($elt[0])] = array_key_exists(1, $elt) ? $elt[1] : $item[1];
                 }
-                if (sizeof($item) == 3) $extract[$item[1]] = $item[2];
+                if (sizeof($item) == 3) $extract[strtoupper($item[1])] = $item[2];
                 $extract = ['ATTENDEE' => $extract];
                 break;
             // ATTACH;FMTTYPE=audio/basic:http://example.com/pub/audio-files/ssbanner.aud
@@ -269,12 +280,12 @@ class IcsCalendarReader
                     $key = array_search('HTTP', $item);
                     $key = !$key ? array_search('Http', $item) : $key;
                     $key = !$key ? array_search('http', $item) : $key;
-                    $item[$key] = $item[$key] .':'. $item[$key + 1];
+                    $item[$key] = strtolower($item[$key]) .':'. $item[$key + 1];
                     unset($item[$key + 1]);
                     $key = array_search('FTP', $item);
                     $key = !$key ? array_search('Ftp', $item) : $key;
                     $key = !$key ? array_search('ftp', $item) : $key;
-                    $item[$key] = $item[$key] .':'. $item[$key + 1];
+                    $item[$key] = strtolower($item[$key]) .':'. $item[$key + 1];
                     unset($item[$key + 1]);
                 }
                 $local = explode(";", $item[0]);
@@ -338,8 +349,24 @@ class IcsCalendarReader
                 }
                 $extract = ["REQUEST-STATUS" => $extract];
                 break;
+            case $this->startWith($ligne, "TRIGGER"):
+                $local = explode(";", $item[0]);
+                $tmp = array_shift($local);
+                $topValue = false;
+                foreach ($local as $elt) {
+                    $elt = explode("=", $elt);
+                    if ($elt[0] == "VALUE") {
+                        $extract[strtoupper($elt[1])] = $item[1];
+                        $topValue = true;
+                    } else {
+                        $extract[$elt[0]] = $elt[1];
+                    }
+                }
+                if ($topValue) $extract["DATE-TIME"] = $item[1];
+                $extract = ['TRIGGER' => $extract];
+                break;
             default:
-                $extract[$item[0]] = $item[1];
+                $extract[strtoupper($item[0])] = $item[1];
         }
         return $extract;
     }
@@ -359,7 +386,13 @@ class IcsCalendarReader
             if ($this->startWith($ligne, 'BEGIN')) {
                 $blocTmp = substr($ligne, strpos($ligne, ':') + 1);
                 list($lignes, $tmp) = $this->extractBloc($lignes, $blocTmp);
-                $bloc[$blocTmp] = $tmp;
+                if ($blocTmp == "VALARM") {
+                    if (!array_key_exists('VALARM', $bloc)) $bloc['VALARM'] = [];
+                    $alarms = array_merge($bloc['VALARM'], [$tmp]);
+                    $bloc['VALARM'] = $alarms;
+                } else {
+                    $bloc[$blocTmp] = $tmp;
+                }
             } elseif ($this->startWith($ligne, 'END')) {
                 $blocEame = substr($ligne, strpos($ligne, ':') + 1);
             } else {

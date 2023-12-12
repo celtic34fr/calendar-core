@@ -2,8 +2,8 @@
 
 namespace Celtic34fr\CalendarCore\Entity;
 
-use Bolt\Entity\User;
 use Celtic34fr\CalendarCore\Entity\CalType;
+use Celtic34fr\CalendarCore\Entity\Person;
 use Celtic34fr\CalendarCore\Repository\CalendarRepository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * created_at   datetime    date de création du calendrier
  * name         string      nom affecté au calendrier
  * type         relation    typologie associé au calendrier, ManyToOne vers table CalType
- * owner        relation    propriétaire du calendrier, ManyToOne vers table User
+ * owner        relation    propriétaire du calendrier, ManyToOne vers table Person
  */
 
 #[ORM\Entity(repositoryClass: CalendarRepository::class)]
@@ -41,9 +41,9 @@ class Calendar
     #[ORM\JoinColumn(name: 'type_id', referencedColumnName: 'id', nullable: true)]
     private ?CalType $type = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Person::class)]
     #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'id', nullable: true)]
-    private ?User $owner = null;
+    private ?Person $owner = null;
 
 
     /**
@@ -121,9 +121,9 @@ class Calendar
     }
 
     /**
-     * @return User|null
+     * @return Person|null
      */
-    public function getOwner(): ?User
+    public function getOwner(): ?Person
     {
         return $this->owner;
     }
@@ -135,16 +135,16 @@ class Calendar
      */
     public function getOwnerName(): ?string
     {
-        $user = $this->getOwner();
-        if ($user) return $user->getDisplayName();
-        return $user;
+        $owner = $this->getOwner();
+        if ($owner) return $owner->getFullname();
+        return $owner;
     }
 
     /**
-     * @param User $owner
+     * @param Person $owner
      * @return Calendar
      */
-    public function setOwner(User $owner): self
+    public function setOwner(Person $owner): self
     {
         $this->owner = $owner;
         return $this;

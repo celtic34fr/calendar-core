@@ -13,6 +13,7 @@ trait FormatRRuleTrait
         if (array_key_exists("INTERVAL", $rrule)) $rruleItem->setInterval((int) $rrule["INTERVAL"]);
         if (array_key_exists("COUNT", $rrule)) $rruleItem->setCount($rrule["COUNT"]);
         if (array_key_exists("WKST", $rrule)) $rruleItem->setWeekStartDay($rrule["WKST"]);
+        if (array_key_exists("UNTIL", $rrule)) $rruleItem->setUntilDate($rrule["UNTIL"]);
 
         /** integration of BY* componant */
         if (array_key_exists("BYSECOND", $rrule)) $rruleItem->setByFreqSecond($rrule["BYSECOND"]);
