@@ -146,9 +146,6 @@ class CalEventRepository extends ServiceEntityRepository
     private function formatEvents(array $events, string $type)
     {
         switch ($type) {
-            case "ARRAY":
-                continue;
-                break;
             case "JSON":
                 $events['datas'] = json_encode($events['datas']);
                 break;
