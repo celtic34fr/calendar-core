@@ -11,7 +11,7 @@ class CalTypeParameterController extends AbstractController
     #[Route('/cal/type/parameter', name: 'app_cal_type_parameter')]
     public function index(): Response
     {
-        return $this->render('parameter/cal_type/create.html.twig', [
+        return $this->render('@calendar-core/parameter/cal_type/create.html.twig', [
             'controller_name' => 'CalTypeParameterController',
         ]);
     }

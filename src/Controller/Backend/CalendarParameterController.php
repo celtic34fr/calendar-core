@@ -12,7 +12,7 @@ class CalendarParameterController extends AbstractController
     #[Route('/new', name: 'create')]
     public function index(): Response
     {
-        return $this->render('parameter/calendar/create.html.twig', [
+        return $this->render('@calendar-core/parameter/calendar/create.html.twig', [
             'controller_name' => 'CalendarParameterController',
         ]);
     }

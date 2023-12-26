@@ -43,7 +43,7 @@ class ParametersController extends AbstractController
     public function calendars(CalendarRepository $calendarRepo): Response
     {
         $calendars = $calendarRepo->findActiveCalendars();
-        return $this->render('parameters/calendars.html.twig', [
+        return $this->render('@calendar-core/parameters/calendars.html.twig', [
             'calendars' => $calendars,
         ]);
     }
@@ -52,7 +52,7 @@ class ParametersController extends AbstractController
     public function cal_types(): Response
     {
         $calTypes = $this->calTypeRepo->findAll();
-        return $this->render('parameters/cal-types.html.twig', [
+        return $this->render('@calendar-core/parameters/cal-types.html.twig', [
             'cal_types' => $calTypes,
         ]);
     }
