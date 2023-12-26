@@ -11,6 +11,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ParameterRepository::class)]
 #[ORM\Table(name: 'parameters')]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * Class Parameter
+ * 
+ * cle          :
+ * ord          :
+ * valeur       :
+ * created_at   : date de création
+ * updated_at   : date dernière mise à jour
+ */
 class Parameter
 {
     #[ORM\Id]

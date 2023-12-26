@@ -21,6 +21,29 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table('cal_journals')]
 /**
  * Class CalJournal : Calendar Journal
+ * 
+ * dt_stamp         :
+ * classification   :
+ * created          :
+ * dt_start         :
+ * last_modified    :
+ * organizer        :
+ * recur_id         :
+ * seq              :
+ * status           :
+ * summary          :
+ * url              :
+ * rrule            :
+ * attachs          :
+ * attendees        :
+ * categories       :
+ * comment          :
+ * contact          :
+ * description      :
+ * ex_dates         :
+ * related          :
+ * r_dates          :
+ * r_status         :
  */
 class CalJournal
 {
@@ -34,7 +57,7 @@ class CalJournal
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     #[Assert\DateTime]
-    private DateTime $dtStamp;
+    private DateTime $dt_stamp;
     
     #[ORM\Column(type: Types::TEXT, nullable:true)]
     #[Assert\Type('string')]
@@ -46,11 +69,11 @@ class CalJournal
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
-    private ?DateTime $dtstart = null;
+    private ?DateTime $dt_start = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\DateTime]
-    private ?DateTime $lastModified = null;
+    private ?DateTime $last_modified = null;
 
     #[ORM\ManyToOne(targetEntity: Organizer::class)]
     #[ORM\JoinColumn(name: 'organizer_id', referencedColumnName: 'id', nullable: true)]
@@ -159,22 +182,22 @@ class CalJournal
     }
 
     /**
-     * Get the value of dtStamp
+     * Get the value of dt_stamp
      * @return DateTime
      */
     public function getDtStamp(): DateTime
     {
-        return $this->dtStamp;
+        return $this->dt_stamp;
     }
 
     /**
-     * Set the value of dtStamp
-     * @param DateTime $dtStamp
+     * Set the value of dt_stamp
+     * @param DateTime $dt_stamp
      * @return self
      */
-    public function setDtStamp(DateTime $dtStamp): self
+    public function setDtStamp(DateTime $dt_stamp): self
     {
-        $this->dtStamp = $dtStamp;
+        $this->dt_stamp = $dt_stamp;
         return $this;
     }
 
@@ -239,22 +262,22 @@ class CalJournal
      */
     public function getDtStart(): ?DateTime
     {
-        return $this->dtstart;
+        return $this->dt_start;
     }
 
     public function emptyDtStart(): bool
     {
-        return empty($this->dtstart);        
+        return empty($this->dt_start);        
     }
 
     /**
-     * Set the value of dtstart
-     * @param DateTime $dtstart
+     * Set the value of dt_start
+     * @param DateTime $dt_start
      * @return self
      */
-    public function setDtStart(DateTime $dtstart): self
+    public function setDtStart(DateTime $dt_start): self
     {
-        $this->dtstart = $dtstart;
+        $this->dt_start = $dt_start;
         return $this;
     }
 
@@ -264,7 +287,7 @@ class CalJournal
      */
     public function getLastModified(): ?DateTime
     {
-        return $this->lastModified;
+        return $this->last_modified;
     }
 
     /**
@@ -272,17 +295,17 @@ class CalJournal
      */
     public function emptyLastModified(): bool
     {
-        return empty($this->lastModified);        
+        return empty($this->last_modified);        
     }
 
     /**
-     * Set the value of lastModified
-     * @param DateTime $lastModified
+     * Set the value of last_modified
+     * @param DateTime $last_modified
      * @return self
      */
-    public function setLastModified(DateTime $lastModified): self
+    public function setLastModified(DateTime $last_modified): self
     {
-        $this->lastModified = $lastModified;
+        $this->last_modified = $last_modified;
         return $this;
     }
 

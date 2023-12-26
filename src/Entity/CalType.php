@@ -15,9 +15,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * ****************
  * 
  * id
- * created_at   datetime    date de création du calendrier
- * name         string      nom affecté au calendrier
- * calendars    relation    ensemble des calendriers du type défini par 'name', OneToMany vers la table Calendar
+ * created_at [datetime] :  date de création du calendrier
+ * name       [string]   :  nom affecté au calendrier
+ * calendars  [relation] :  ensemble des calendriers du type défini par 'name', OneToMany vers la table Calendar
  */
 
 #[ORM\Entity(repositoryClass: CalTypeRepository::class)]

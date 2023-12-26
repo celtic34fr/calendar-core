@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Class Contacts of the Event spécifics fields
  * 
+ * added fields to Person entity
  * - altrep     : ALTREP parameter
  * - language   : LANGUAGE parameter
  */

@@ -13,7 +13,7 @@ enum StatusEnums: string
     case Declined       = 'DECLINED';       // événement, journal, tache refusée
     case Tentative      = "TENTATIVE";      // événement, tache tempotairement acceptée
     case Delegated      = "DELEGATED";      // événement, tache délégué
-    case Completed      = "COMPLETED";      // tache terminée (complté avec la datede fin)
+    case Completed      = "COMPLETED";      // tache terminée (complété avec la date de fin)
     case InProcess      = "IN-PROCESS";     // tache en cours de finalisation
 
     const VeventStatus = [

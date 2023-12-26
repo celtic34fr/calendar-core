@@ -9,13 +9,13 @@ enum WeekDaysEnums: string
     use EnumToArray;
 
     // MO, TU, WE, TH, FR, SA et SU
-    case Monday     = "MO";
-    case Tuesday    = "TU";
-    case Wednesday  = "WE";
-    case Thursday   = "TH";
-    case Friday     = "FR";
-    case Saturday   = "SA";
-    case Sunday     = "SU";
+    case Monday     = "MO"; // Lundi
+    case Tuesday    = "TU"; // Mardi
+    case Wednesday  = "WE"; // Mercredi
+    case Thursday   = "TH"; // Jeudi
+    case Friday     = "FR"; // Vendredi
+    case Saturday   = "SA"; // Samedi
+    case Sunday     = "SU"; // Dimanche
 
     public function _toString(): string
     {

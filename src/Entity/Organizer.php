@@ -11,9 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Class Organizer of the Event spécifics fields
  * 
- * - dir      : DIR parameter
- * - sendBy   : SENDBY parameter
- * - language : LANGUAGE parameter
+ * added fields to Person entity
+ * - dir      : DIR
+ * - sendBy   : SENDBY
+ * - language : LANGUAGE
  */
 class Organizer extends Person
 {

@@ -9,7 +9,7 @@ enum EventEnums: string
     use EnumToArray;
 
     case ContactTel     = 'CTEL';   // demande de rendez-vous via demande de contact
-    case CongesAbs      = 'ABCS';    // congé, absence
+    case CongesAbs      = 'ABCS';   // congé, absence
     case Intervention   = 'INTR';   // intervention (chez client, dans locaux ...)
     case Meeting        = "MEET";   // réunion de travail, meeting divers ...
 

@@ -5,6 +5,15 @@ namespace Celtic34fr\CalendarCore\EntityRedefine;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use DateTimeImmutable;
 
+/**
+ * class ParameterCalEvent redefines class Parameter for ParemeterList 'SysCalNature'
+ * 
+ * nature           : code de la nature d'événement
+ * description      : description fonctionnalité
+ * backgroundColor  : couleur de fond d'affichage
+ * borderColor      : coukeur de bordure d'affichage
+ * textColor        : couleur d'affichage du texte
+ */
 class ParameterCalEvent
 {
     const HEADER = [

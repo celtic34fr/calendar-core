@@ -5,11 +5,11 @@ namespace Celtic34fr\CalendarCore\FormEntity;
 class CalEventItem
 {
     private ?int $id = null;
-    private ?string $cle;
-    private ?string $fonction;
-    private ?string $background;
-    private ?string $border;
-    private ?string $text;
+    private ?string $cle;        // clé d'accès à la table Parameter
+    private ?string $fonction;   // description ou fonctionnalité
+    private ?string $background; // couleur de fond d'affichage
+    private ?string $border;     // coukeur de bordure d'affichage
+    private ?string $text;       // coukeuyr d'affichage du texte
 
     /**
      * @param string $jsonStr

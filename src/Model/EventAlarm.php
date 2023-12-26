@@ -4,6 +4,7 @@ namespace Celtic34fr\CalendarCore\Model;
 
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Enum\AlarmTypeEnums;
+use DateTime;
 
 class EventAlarm
 {

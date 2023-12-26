@@ -8,13 +8,13 @@ enum PeriodEnums: string
 {
     use EnumToArray;
 
-    case Secondly   = "SECONDLY";
-    case Minutely   = "MINUTELY";
-    case Hourly     = "HOURLY";
-    case Daily      = "DAILY";
-    case Weekly     = "WEEKLY";
-    case Monthly    = "MONTHLY";
-    case Yearly     = "YEARLY";
+    case Secondly   = "SECONDLY";   // à la seconde
+    case Minutely   = "MINUTELY";   // à la minute
+    case Hourly     = "HOURLY";     // à l'heure
+    case Daily      = "DAILY";      // journalier
+    case Weekly     = "WEEKLY";     // hebdomadaire
+    case Monthly    = "MONTHLY";    // mensuel
+    case Yearly     = "YEARLY";     // annuel
 
     public function _toString(): string
     {

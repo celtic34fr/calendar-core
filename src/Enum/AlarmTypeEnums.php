@@ -8,9 +8,9 @@ enum AlarmTypeEnums: string
 {
     use EnumToArray;
 
-    case Audio      = "AUDIO";
-    case Display    = "DISPLAY";
-    case Email      = "EMAIL";
+    case Audio      = "AUDIO";      // alarme audio
+    case Display    = "DISPLAY";    // alarme visuelle
+    case Email      = "EMAIL";      // alarme par envoi de courriel
 
     public function _toString(): string
     {

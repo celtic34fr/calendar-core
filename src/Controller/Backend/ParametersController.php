@@ -31,9 +31,10 @@ class ParametersController extends AbstractController
     private $schemaManager;
 
     public function __construct(
-        private EntityManagerInterface $em,
-        private CalEventRepository $calEventRepo,
-        private ParameterRepository $parameterRepo
+        private EntityManagerInterface $em,         // entity manager
+        private CalEventRepository $calEventRepo,   // CalEvent repository
+        private ParameterRepository $parameterRepo, // Parameter repository
+        private CalTypeRepository $calTypeRepo,     // CelType repository
     ) {
         $this->schemaManager = $em->getConnection()->getSchemaManager();
     }
@@ -48,16 +49,20 @@ class ParametersController extends AbstractController
     }
 
     #[Route('/cal_types', name: 'cal-types')]
-    public function cal_types(CalTypeRepository $calTypeRepo): Response
+    public function cal_types(): Response
     {
-        $calTypes = $calTypeRepo->findAll();
+        $calTypes = $this->calTypeRepo->findAll();
         return $this->render('parameters/cal-types.html.twig', [
             'cal_types' => $calTypes,
         ]);
     }
 
     #[Route('type_event', name: 'type-event')]
-    /** Gestion des types d'événements, rendez-vous : ajout - modification - suppression */
+    /** Gestion des types d'événements, rendez-vous : ajout - modification - suppression
+     *
+     * @param Request $request
+     * @return void
+     */
     public function eventTypeGest(Request $request)
     {
         /** récupération du préfix de création des table dans Bolt CMS */
@@ -68,7 +73,7 @@ class ParametersController extends AbstractController
         /** contrôle existance table nécessaire à la méthode 'parameters' */
         if ($this->existsTable($dbPrefix . 'parameters') == true) {
             /** recherche des informations de base */
-            $calEventEntete = $this->parameterRepo->findOneBy(['cle' => self::PARAM_CLE, 'ord' => 0]);
+            $calEventEntete = $this->parameterRepo->findCurrentOneBy(['cle' => self::PARAM_CLE, 'ord' => 0]);
             $calEventItems = $this->parameterRepo->findItemsByCle(self::PARAM_CLE);
             $errors = [];
 
@@ -161,6 +166,10 @@ class ParametersController extends AbstractController
         return $this->render("@calendar-core/cal_types/type_gest.html.twig", $twig_context);
     }
 
+    /**
+     * @param array $post
+     * @return CalEventItems
+     */
     private function getFormItems(array $post): CalEventItems
     {
         $formItems = new CalEventItems();
@@ -176,6 +185,10 @@ class ParametersController extends AbstractController
         return $formItems;
     }
 
+    /**
+     * @param array $rawErrors
+     * @return array
+     */
     private function formatErrors(array $rawErrors): array
     {
         $formatedErrors = [];

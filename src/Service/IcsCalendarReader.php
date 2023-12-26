@@ -4,6 +4,9 @@ namespace Celtic34fr\CalendarCore\Service;
 
 use Celtic34fr\CalendarCore\Traits\R34ICS_Calendar;
 
+/**
+ * class IcsCalendarReader inspired by Room34CreativeServices works
+ */
 class IcsCalendarReader
 {
     /**
@@ -96,8 +99,17 @@ class IcsCalendarReader
 		if (!is_null( $first ) and !is_null( $last )) {
             $this->ical = [];
 			$lignes = array_slice( $lines, $first + 1, ( $last - $first - 1 ), true );
+            $lastLign = "";
+            $lignProcceds = [];
+            $strContinue = false;
+            $ligne = "";
             while (!empty($lignes)) {
                 $ligne = array_shift($lignes);
+                $strContinue = false;
+                if (strpos($ligne, " ") === 0) {
+                    $ligne = $lastLign . $ligne;
+                    $strContinue = true;
+                }
 
                 /** suppression des caractères non affichages (Room34CreativeServices) */
                 $ligne = $this->removeUnprintableChars($ligne);

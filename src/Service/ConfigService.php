@@ -17,6 +17,9 @@ class ConfigService
         $this->config = $this->getConfigArray();
     }
 
+    /**
+     * @return array
+     */
     protected function getConfigArray() : array
     {
         if(!empty($this->config)) {
@@ -39,7 +42,11 @@ class ConfigService
         return $config;
     }
 
-    protected function prepareValue($value)
+    /**
+     * @param string $value
+     * @return void
+     */
+    protected function prepareValue(string $value)
     {
         if(preg_match('#%env\((.*)\)%#', $value, $matches)) {
             $value = $_ENV[$matches[1]] ?: $value;
@@ -47,7 +54,10 @@ class ConfigService
         return $value;
     }
 
-    // Exemple de méthode d’accès aux paramètres ici clé d’accès ‘mailer’
+    /**
+     * Exemple de méthode d’accès aux paramètres ici clé d’accès ‘mailer’
+     * @return void
+     */
     public function getConnexionParams()
     {
         $this->config = $this->getConfigArray();

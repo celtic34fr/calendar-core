@@ -8,13 +8,13 @@ enum PartStatEnums: string
 {
     use EnumToArray;
 
-    case NeedsAction = 'NEEDS-ACTION';      // ALL CASE, DEFAULT
-    case Accepted = 'ACCEPTED';             // ALL CASE
-    case Declined = 'DECLINED';             // ALL CASE
-    case Tentative = 'TENTATIVE';           // VEVENT & VTODO
-    case Delegated = 'DELEGATED';           // VEVENT & VTODO
-    case Completed = 'COMPLETED';           // VTODO
-    case InProcess = 'IN-PROCESS';          // VTODO
+    case NeedsAction = 'NEEDS-ACTION';      // ALL CASE, DEFAULT : besoin d'une action
+    case Accepted = 'ACCEPTED';             // ALL CASE          : status accepté
+    case Declined = 'DECLINED';             // ALL CASE          : status refusé
+    case Tentative = 'TENTATIVE';           // VEVENT & VTODO    : en attente action
+    case Delegated = 'DELEGATED';           // VEVENT & VTODO    : status dékégué
+    case Completed = 'COMPLETED';           // VTODO             : tache terminée
+    case InProcess = 'IN-PROCESS';          // VTODO             : tache encours d'exécution
 
     public function _toString(): string
     {

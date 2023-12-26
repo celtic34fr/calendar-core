@@ -17,6 +17,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table('cal_free_busy')]
 /**
  * Class CalFreeBusy : Calendar FreeBusy
+ * 
+ * uid          :
+ * dt_stamp     :
+ * contact      :
+ * dt_start     :
+ * dt_end       :
+ * organizer    :
+ * url          :
+ * attendees    :
+ * comment      :
+ * attendees    :
+ * frees_busies :
+ * r_status     :
  */
 class CalFreeBusy
 {
@@ -30,7 +43,7 @@ class CalFreeBusy
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     #[Assert\DateTime]
-    private DateTime $dtStamp;
+    private DateTime $dt_stamp;
 
     #[ORM\ManyToOne(targetEntity: Contact::class)]
     #[ORM\JoinColumn(name: 'contact_id', referencedColumnName: 'id', nullable: true)]
@@ -106,22 +119,22 @@ class CalFreeBusy
     }
 
     /**
-     * Get the value of dtStamp
+     * Get the value of dt_stamp
      * @return DateTime
      */
     public function getDtStamp(): DateTime
     {
-        return $this->dtStamp;
+        return $this->dt_stamp;
     }
 
     /**
-     * Set the value of dtStamp
-     * @param DateTime $dtStamp
+     * Set the value of dt_stamp
+     * @param DateTime $dt_stamp
      * @return self
      */
-    public function setDtStamp(DateTime $dtStamp): self
+    public function setDtStamp(DateTime $dt_stamp): self
     {
-        $this->dtStamp = $dtStamp;
+        $this->dt_stamp = $dt_stamp;
         return $this;
     }
 

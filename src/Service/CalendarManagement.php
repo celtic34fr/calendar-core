@@ -3,8 +3,10 @@
 namespace Celtic34fr\CalendarCore\Service;
 
 use Celtic34fr\CalendarCore\Entity\CalEvent;
+use Celtic34fr\CalendarCore\Entity\CalFreeBusy;
 use Celtic34fr\CalendarCore\Entity\CalTask;
 use Celtic34fr\CalendarCore\Model\EventICS;
+use Celtic34fr\CalendarCore\Model\FreeBusyICS;
 use Celtic34fr\CalendarCore\Model\JournalICS;
 use Celtic34fr\CalendarCore\Model\TaskICS;
 use Celtic34fr\CalendarCore\Service\IcsCalendarReader;
@@ -25,7 +27,12 @@ class CalendarManagement
     {
     }
 
-    public function restore(string $dirpath, string $filename)
+    /**
+     * @param string $dirpath
+     * @param string $filename
+     * @return bool
+     */
+    public function restore(string $dirpath, string $filename): bool
     {
         if (file_exists($dirpath)) {
             if (chdir($dirpath)) {
@@ -54,23 +61,34 @@ class CalendarManagement
                 $this->generateTasks($tasks, $globalFuseau);
             }
 
-            $journals = $calArray['VJOUNAL'] ?? [];
+            $journals = $calArray['VJOURNAL'] ?? [];
             if ($journals) {
                 $this->generateJournal($journals);
             }
 
             $freesbusies = $calArray['VFREEBUSY'] ?? [];
+            if ($freesbusies) {
+                $this->generateFreeBusy($freesbusies);
+            }
 
             return true;
         }
         return false;
     }
 
-    private function formatDate(array $dateIcs)
+    /**
+     * @param array $dateIcs
+     * @return DateTime
+     */
+    private function formatDate(array $dateIcs): DateTime
     {
         return DateTime::createFromFormat("YmdThis", $dateIcs["VALUE"], $dateIcs["TZID"] ?? null);
     }
 
+    /**
+     * @param array $events
+     * @return void
+     */
     private function generateEvents(array $events): void
     {
         foreach ($events as $event) {
@@ -87,6 +105,10 @@ class CalendarManagement
         $this->entityManager->flush();
     }
 
+    /**
+     * @param array $tasks
+     * @return void
+     */
     private function generateTasks(array $tasks): void
     {
         foreach ($tasks as $task) {
@@ -103,6 +125,10 @@ class CalendarManagement
         $this->entityManager->flush();
     }
 
+    /**
+     * @param array $journals
+     * @return void
+     */
     private function generateJournal(array $journals): void
     {
         foreach ($journals as $journal) {
@@ -115,6 +141,26 @@ class CalendarManagement
             } 
             
             $journalICS->buildFromArray($journal);
+        }
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @param array $freesbusies
+     * @return void
+     */
+    private function generateFreeBusy(array $freesbusies): void
+    {
+        foreach ($freesbusies as $freebusy) {
+            if (array_key_exists("UID", $freebusy)) 
+                $freebusyBD = $this->entityManager->getRepository(CalFreeBusy::class)->findOneBy(["uid" => $freebusy['UID']]);
+            if (!$freebusyBD) {
+                $freebusyICS = new FreeBusyICS($this->entityManager);
+            } else {
+                $freebusyICS = new FreeBusyICS($this->entityManager, $freebusyBD);
+            } 
+            
+            $freebusyICS->buildFromArray($freebusy);
         }
         $this->entityManager->flush();
     }

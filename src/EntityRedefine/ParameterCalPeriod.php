@@ -5,6 +5,12 @@ namespace Celtic34fr\CalendarCore\EntityRedefine;
 use Celtic34fr\CalendarCore\Entity\Parameter;
 use DateTimeImmutable;
 
+/**
+ * class ParameterCalPeriod redefines class Parameter for ParemeterList 'SysCalPeriod'
+ * 
+ * name             : code de la période d'événement
+ * description      : description du type de période
+ */
 class ParameterCalPeriod
 {
     const HEADER = [

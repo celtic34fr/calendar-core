@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class Attendees of the Event spécifics fields
  * 
+ * added fields to Person entity
  * - cuType        : CUTYPE 
  * - member        : MEMBER
  * - role          : ROLE

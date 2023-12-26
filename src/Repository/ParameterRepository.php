@@ -21,6 +21,13 @@ class ParameterRepository extends ServiceEntityRepository
         parent::__construct($registry, Parameter::class);
     }
 
+    /**
+     * Persist only or and Flush entity
+     * 
+     * @param Parameter $entity
+     * @param boolean $flush
+     * @return void
+     */
     public function save(Parameter $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -29,6 +36,13 @@ class ParameterRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Remove only or and Flush entity
+     * 
+     * @param Parameter $entity
+     * @param boolean $flush
+     * @return void
+     */
     public function remove(Parameter $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -68,6 +82,11 @@ class ParameterRepository extends ServiceEntityRepository
         return $nameList;
     }
 
+    /**
+     * Return list of titles of Parameter List
+     * @param string $name
+     * @return array
+     */
     public function getValuesParamterList(string $name): array
     {
         $paramList = [];
@@ -80,6 +99,14 @@ class ParameterRepository extends ServiceEntityRepository
         return $paramList;
     }
 
+    /**
+     * Record an Parameter List (Key name, Description and Values)
+     *
+     * @param string $name
+     * @param array $valeurs
+     * @param string|null $description
+     * @return void
+     */
     public function recordParamtersList(string $name, array $valeurs, string $description = null): void
     {
         $entity = $this->findOneBy(['cle' => $name, 'ord' => 0]);
@@ -102,6 +129,12 @@ class ParameterRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Reorganizer with ascending sort filter Parameter List's values
+     *
+     * @param string $cle
+     * @return void
+     */
     public function reorgValues(string $cle): void
     {
         $values = $this->createQueryBuilder('p')
@@ -121,7 +154,13 @@ class ParameterRepository extends ServiceEntityRepository
         }
     }
 
-    public function findItemsByCle(string $cle)
+    /**
+     * Return list of values associate to full Key name Parameter List
+     *
+     * @param string $cle
+     * @return null|array
+     */
+    public function findItemsByCle(string $cle): mixed
     {
         return $this->createQueryBuilder('p')
             ->where('p.cle = :cle')
@@ -131,7 +170,15 @@ class ParameterRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findByPartialFields(array $criteria, array $orderBy = null)
+    /**
+     * Return list of values associate to partials Keyname/Value Parameter List
+     * with or without sort filters
+     *
+     * @param array $criteria
+     * @param array|null $orderBy
+     * @return null|array
+     */
+    public function findByPartialFields(array $criteria, array $orderBy = null): mixed
     {
         $qb = $this->createQueryBuilder('p');
         foreach ($criteria as $cle => $partial) {
@@ -143,6 +190,19 @@ class ParameterRepository extends ServiceEntityRepository
             }
         }
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Find last entry on criteria and/or not order filter
+     *
+     * @param array $criteria
+     * @return null|Parameter
+     */
+    public function findCurrentOneBy(array $criteria) : mixed
+    {
+        $record = $this->findBy($criteria, ['created' =>'DESC']);
+        if ($record) return array_shift($record);
+        rturn null;
     }
 
     //    /**

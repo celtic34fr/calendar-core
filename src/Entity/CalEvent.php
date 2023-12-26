@@ -2,6 +2,8 @@
 
 namespace Celtic34fr\CalendarCore\Entity;
 
+use Celtic34fr\CalendarCore\Doctrine\Type\EventLocationType;
+use Celtic34fr\CalendarCore\Doctrine\Type\EventRepetitionType;
 use Celtic34fr\CalendarCore\Entity\Attendee;
 use Celtic34fr\CalendarCore\Entity\Organizer;
 use Celtic34fr\CalendarCore\Entity\Parameter;
@@ -134,16 +136,14 @@ class CalEvent
     #[Assert\Type('string')]
     private ?string $classification = null;
 
-    #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
+    #[ORM\Column(type: EventLocationType::EVENT_LOCATION, nullable:true)]
     private ?EventLocation $location = null;
 
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: true)]
     #[Assert\Type('string')]
     private ?string $timezone = null;
 
-    #[ORM\Column(type: Types::JSON, nullable:true)]
-    #[Assert\Type('array')]
+    #[ORM\Column(type: EventRepetitionType::EVENT_REPETITION, nullable:true)]
     private ?EventRepetition $frequence = null;
 
     #[ORM\ManyToMany(targetEntity: Attendee::class)]
