@@ -27,6 +27,11 @@ class CalEventRepository extends ServiceEntityRepository
         parent::__construct($registry, CalEvent::class);
     }
 
+    /**
+     * @param CalEvent $entity
+     * @param boolean $flush
+     * @return void
+     */
     public function save(CalEvent $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -35,6 +40,11 @@ class CalEventRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param CalEvent $entity
+     * @param boolean $flush
+     * @return void
+     */
     public function remove(CalEvent $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -43,6 +53,12 @@ class CalEventRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param integer $currentPage
+     * @param integer $limit
+     * @param string $type
+     * @return array
+     */
     public function findAllPaginate(int $currentPage = 1, int $limit =10, string $type = "array"): array
     {
         if (strtoupper($type) != "ARRAY" || strtoupper($type) != "JSON") $type = "ARRAY";
@@ -53,6 +69,13 @@ class CalEventRepository extends ServiceEntityRepository
         return $this->formatEvents($results, $type);
     }
 
+    /**
+     * @param integer $currentPage
+     * @param integer $limit
+     * @param DateTime|null $from
+     * @param string $type
+     * @return array
+     */
     public function findAllPaginateFromDate(int $currentPage = 1, int $limit = 10,
             DateTime $from = null, string $type = "array"): array
     {
@@ -69,6 +92,10 @@ class CalEventRepository extends ServiceEntityRepository
         return $this->formatEvents($results, $type);
     }
 
+    /**
+     * @param Parameter $category
+     * @return void
+     */
     public function findEventsByCategory(Parameter $category)
     {
         return $this->createQueryBuilder('ce')
@@ -80,6 +107,13 @@ class CalEventRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * @param integer $currentPage
+     * @param integer $limit
+     * @param DateTime|null $from
+     * @param string $type
+     * @return void
+     */
     public function findAllRendezVousPaginate(int $currentPage = 1, int $limit = 10, DateTime $from = null,
         string $type = "array")
     {
@@ -97,6 +131,12 @@ class CalEventRepository extends ServiceEntityRepository
         return $this->formatEvents($results, $type);
     }
 
+    /**
+     * @param DateTime $from
+     * @param DateTime $to
+     * @param string $type
+     * @return void
+     */
     public function findAllEventFromToDate(DateTime $from, DateTime $to, string $type = "array")
     {
         $type = strtoupper($type);
