@@ -4,6 +4,7 @@ namespace Celtic34fr\CalendarCore\Controller;
 
 use Celtic34fr\CalendarCore\Entity\CalEvent;
 use Celtic34fr\CalendarCore\Form\FormEventType;
+use Celtic34fr\CalendarCore\Model\EventLocation;
 use Celtic34fr\CalendarCore\Repository\CalEventRepository;
 use DateInterval;
 use DateTime;
@@ -24,7 +25,7 @@ class CalendarManagmentController extends AbstractController
     ) {
     }
 
-    #[Route('/add_event_form', name: 'add-form')]
+    #[Route('/event_form', name: 'event-form')]
     public function index(Request $request): Response
     {
         $form = $this->createForm(FormEventType::class);
@@ -34,14 +35,52 @@ class CalendarManagmentController extends AbstractController
     }
 
     #[Route('/add_event', name: 'add')]
+    /**
+     * add new Event in table CalEvent
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function add(Request $request): JsonResponse
     {
         $response = new JsonResponse();
 
         if ($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
-            $title = $request->request->get('title');
-            $start = $request->request->get('start');
-            $end   = $request->request->get('end');
+            $title =        $request->request->get('subject', null);
+            $start =        $request->request->get('start_at', new DateTime('now'));
+            $end   =        $request->request->get('end_at', null);
+            $details =      $request->request->get('details', null);
+            $localisation = $request->request->get('localisation', null);
+
+            /** validation des dates de l'événement */
+            if ($start < $end) {
+                $errMsgs = [
+                    'type' =>'error',
+                    'msg' => "La date de début est infériere à la date de fin de l'événement, veuillez corriger",
+                ];
+            } else {
+                /** validation si un énévement n'existe pas sur la période choisie */
+                $startDT = new DateTime($start);
+                $endDT = new DateTime($end);
+                $evtsStart = $this->calEventRepo->findEventStartBetweenDate($startDT, $endDT);
+                $evtsEnd   = $this->calEventRepo->findEventEndBetweenDate($startDT, $endDT);
+                if ($evtsStart || $evtsEnd) {
+                    $errMsgs = [
+                        'type' =>'error',
+                        'msg' => "Des événements existe sur la période début/fin choisie, veuillez corriger",
+                    ];
+                } else {
+                    $calEvent = new CalEvent();
+                    $calEvent->setSubject($title);
+                    $calEvent->setStartAt($startDT);
+                    $calEvent->setEndAt($endDT);
+                    $calEvent->setDetails($details);
+                    $localisation = new EventLocation(['localisation' => $localisation]);
+                    $calEvent->setLocation($localisation);
+
+                    $this->calEventRepo->save($calEvent, true);
+                }
+            }
         }
 
         // $response = $this->checkValidRequest($request);

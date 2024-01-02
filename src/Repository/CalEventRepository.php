@@ -4,7 +4,6 @@ namespace Celtic34fr\CalendarCore\Repository;
 
 use Celtic34fr\CalendarCore\Entity\CalEvent;
 use Celtic34fr\CalendarCore\Entity\Parameter;
-use Celtic34fr\CalendarCore\Enum\EventEnums;
 use Celtic34fr\CalendarCore\Traits\DbPaginateTrait;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -59,11 +58,11 @@ class CalEventRepository extends ServiceEntityRepository
      * @param string $type
      * @return array
      */
-    public function findAllPaginate(int $currentPage = 1, int $limit =10, string $type = "array"): array
+    public function findAllPaginate(int $currentPage = 1, int $limit = 10, string $type = "ARRAY"): array
     {
         if (strtoupper($type) != "ARRAY" || strtoupper($type) != "JSON") $type = "ARRAY";
-        $qb = $this->createQueryBuilder("rdv")
-            ->orderBy('rdv.time_at', 'ASC')
+        $qb = $this->createQueryBuilder("ce")
+            ->orderBy('ce.start_at', 'ASC')
             ->getQuery();
         $results = $this->paginateDoctrine($qb, $currentPage, $limit);
         return $this->formatEvents($results, $type);
@@ -77,14 +76,14 @@ class CalEventRepository extends ServiceEntityRepository
      * @return array
      */
     public function findAllPaginateFromDate(int $currentPage = 1, int $limit = 10,
-            DateTime $from = null, string $type = "array"): array
+            DateTime $from = null, string $type = "ARRAY"): array
     {
         if (!$from) $from = new DateTime('now');
         $type = strtoupper($type);
         if ($type != "ARRAY" && $type != "JSON") $type = "ARRAY";
-        $qb = $this->createQueryBuilder("rdv")
-            ->where('rdv.start_at >= :from')
-            ->orderBy('rdv.start_at', 'ASC')
+        $qb = $this->createQueryBuilder("ce")
+            ->where('ce.start_at >= :from')
+            ->orderBy('ce.start_at', 'ASC')
             ->setParameter('from', $from->format("Y-m-d"))
             ->getQuery()
         ;
@@ -94,64 +93,90 @@ class CalEventRepository extends ServiceEntityRepository
 
     /**
      * @param Parameter $category
-     * @return void
-     */
-    public function findEventsByCategory(Parameter $category)
-    {
-        return $this->createQueryBuilder('ce')
-            ->where("ce.nature = :nature")
-            ->setParameter('nature', $category)
-            ->orderBy('ce.start_at', 'DESC')
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-
-    /**
      * @param integer $currentPage
      * @param integer $limit
      * @param DateTime|null $from
      * @param string $type
-     * @return void
+     * @return array
      */
-    public function findAllRendezVousPaginate(int $currentPage = 1, int $limit = 10, DateTime $from = null,
-        string $type = "array")
+    public function findByCategoryPaginate(Parameter $category, int $currentPage = 1, int $limit = 10,
+        DateTime $from = null, string $type = "ARRAY"): array
     {
         if (!$from) $from = new DateTime('now');
         $type = strtoupper($type);
         if ($type != "ARRAY" && $type != "JSON") $type = "ARRAY";
-        $qb = $this->createQueryBuilder('rdv')
-            ->where('rdv.nature = :nature')
-            ->andWhere('rdv.time_at >= :from')
-            ->setParameter('nature', EventEnums::ContactTel->_toString())
+
+        $qb =  $this->createQueryBuilder('ce')
+            ->where("ce.nature = :nature")
+            ->andWhere('ce.start_at >= :from')
+            ->setParameter('nature', $category)
             ->setParameter('from', $from->format("Y-m-d"))
+            ->orderBy('ce.start_at', 'DESC')
             ->getQuery()
-            ;
+            ->getResult()
+        ;
         $results = $this->paginateDoctrine($qb, $currentPage, $limit);
         return $this->formatEvents($results, $type);
     }
 
     /**
-     * @param DateTime $from
-     * @param DateTime $to
+     * @param DateTime|null $from
+     * @param DateTime|null $to
      * @param string $type
-     * @return void
+     * @return array
      */
-    public function findAllEventFromToDate(DateTime $from, DateTime $to, string $type = "array")
+    public function findEventStartBetweenDate(DateTime $from = null, DateTime $to = null, string $type = "ARRAY"):array
     {
+        if (!$from) $from = new DateTime('now');
         $type = strtoupper($type);
         if ($type != "ARRAY" && $type != "JSON") $type = "ARRAY";
-        $qb = $this->createQueryBuilder('rdv')
-        ->where('rdv.time_at >= :from')
-        ->andWhere("rdv.time_at <= :to")
+
+        $qb = $this->createQueryBuilder('ce')
+        ->where('ce.start_at >= :from')
         ->setParameter('from', $from->format("Y-m-d"))
-        ->setParameter('to', $to->format("Y-m-d"))
-        ->getQuery()
+        ;
+        if ($to) $qb
+            ->andWhere("ce.start_at <= :to")
+            ->setParameter('to', $to->format("Y-m-d"));
+
+        $qb->getQuery()
         ->getResult()
         ;
 
         $result = [
-            'datas' => $qb,
+            'datas' => $qb ?? [],
+            'page' => 1,
+            'pages' => 1,
+        ];
+        return $this->formatEvents($result, $type);
+    }
+
+    /**
+     * @param DateTime|null $from
+     * @param DateTime|null $to
+     * @param string $type
+     * @return array
+     */
+    public function findEventEndBetweenDate(DateTime $from = null, DateTime $to = null, string $type = "ARRAY"): array
+    {
+        if (!$from) $from = new DateTime('now');
+        $type = strtoupper($type);
+        if ($type != "ARRAY" && $type != "JSON") $type = "ARRAY";
+
+        $qb = $this->createQueryBuilder('ce')
+        ->where('ce.end_at >= :from')
+        ->setParameter('from', $from->format("Y-m-d"))
+        ;
+        if ($to) $qb
+            ->andWhere("ce.end_at <= :to")
+            ->setParameter('to', $to->format("Y-m-d"));
+
+        $qb->getQuery()
+        ->getResult()
+        ;
+
+        $result = [
+            'datas' => $qb ?? [],
             'page' => 1,
             'pages' => 1,
         ];

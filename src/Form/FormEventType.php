@@ -34,6 +34,10 @@ class FormEventType extends AbstractType
                 'required' => false,
                 'label' => 'Description',
             ])
+            ->add('localisation', TextType::class, [
+                'required' => false,
+                'label' => 'Emplacement',
+            ])
         ;
     }
 

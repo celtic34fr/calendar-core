@@ -39,7 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * - status         : statut de l'événement
  * - uid            : UID associé à l'événement
  * - classification : visibilité de l'événement (CLASS dans la norme RFC) : Privé, Public ou Confidentiel en base
- * - location       : précisiot de l'emplacement ou se déroule l'événement (objet EventLocation)
+ * - location       : précision de l'emplacement ou se déroule l'événement (objet EventLocation)
  * - timezone       : chaîne de caractère précisant le fuseau hpraire de référence pour l'événement
  * - frequence      : précise si renseigné, si lévénement doit êtrŒe répété et comment (RRULE componant)
  * - attendees      : participant à l'événement
@@ -219,6 +219,9 @@ class CalEvent
         $this->attendees = new ArrayCollection();
         $this->alarms = new ArrayCollection();
         $this->attachs = new ArrayCollection();
+        $this->created_at =  new DateTime('now');
+        $this->all_day = false;
+        $this->seq = 0;
     }
 
     /**
