@@ -1,6 +1,6 @@
 <?php
 
-namespace Celtic34fr\CalendarCore\Controller;
+namespace Celtic34fr\CalendarCore\Controller\Backend;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
