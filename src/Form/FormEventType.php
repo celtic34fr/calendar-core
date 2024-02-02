@@ -47,5 +47,4 @@ class FormEventType extends AbstractType
             'data_class' => CalEvent::class,
         ]);
     }
-
 }
