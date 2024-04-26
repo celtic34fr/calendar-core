@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 
  * id
  * created_at   datetime    date de création du calendrier
+ * closed_at    datetime    date de clôture du calendrier (nullable)
  * name         string      nom affecté au calendrier
  * type         relation    typologie associé au calendrier, ManyToOne vers table CalType
  * owner        relation    propriétaire du calendrier, ManyToOne vers table Person
@@ -33,6 +34,10 @@ class Calendar
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: false)]
     #[Assert\DateTime]
     private DateTime $created_at;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Assert\DateTime]
+    private DateTime $closed_at;
 
     #[ORM\Column(type: Types::TEXT, length: 255, nullable: false)]
     private string $name;
@@ -69,6 +74,24 @@ class Calendar
     public function setCreatedAt(DateTime $created_at): self
     {
         $this->created_at = $created_at;
+        return $this;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function getClosedAt(): DateTime
+    {
+        return $this->closed_at;
+    }
+
+    /**
+     * @param DateTime $closed_at
+     * @return Calendar
+     */
+    public function setClosedAt(DateTime $closed_at): self
+    {
+        $this->closed_at = $closed_at;
         return $this;
     }
 

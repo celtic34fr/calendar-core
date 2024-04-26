@@ -1,20 +1,41 @@
-<!DOCTYPE html>
+{% extends "@calendar-core/events_layout.html.twig" %}
 
-<title>Hello ParametersController! Calndars</title>
+{% block shoulder %}
+	{{ 'Liste des calendriers su système' }}
+{% endblock shoulder %}
 
-{% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ '/develops/Devs/DEVEZE-SERVICE/tests/calendarExt/src/Controller/ParametersController.php'|file_link(0) }}">src/Controller/ParametersController.php</a></code></li>
-        <li>Your template at <code><a href="{{ '/develops/Devs/DEVEZE-SERVICE/tests/calendarExt/vendor/bolt/core/templates/parameters/index.html.twig'|file_link(0) }}">vendor/bolt/core/templates/parameters/index.html.twig</a></code></li>
-    </ul>
-</div>
+{% block title %}
+	<i class="fas mr-2 link--icon fa-clipboard-question"></i>
+	Liste des calendriers su système
 {% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+{% endblock %}
+
+{% block main %}
+    <div class="col-12 row tab_calendar">
+        <div class="col-12 row mx-0 px-0 tab_header">
+            <div class="col-4 px-0 mx-0 text-center">Nom</div>
+            <div class="col-2 mx-0 px-0 text-center">Type</div>
+            <div class="col-4 mx-0 px-0 text-center">Propriétaire</div>
+            <div class="col-2 mx-0 px-0 text-center">Actions</div>
+        </div>
+        <div class="col-12 row mx-0 px-0 tab_body">
+    {% for calendar in calendars %}
+        <div class="col-12 row mx-0 px-0 tab_line">
+            <div class="col-4 px-0 mx-0 text-center">{{ calendar.name }}</div>
+            <div class="col-2 mx-0 px-0 text-center">{{ calendar.type.name }}</div>
+            <div class="col-4 mx-0 px-0 text-center">{{ calendar.owner.fullname }}</div>
+            <div class="col-2 mx-0 px-0 text-center"></div>
+        </div>
+    {% else %}
+        <div class="col-12 mx-0 px-0 text-center">Aucun calendrier défini</div>    
+    {% endfor %}
+        </div>
+    </div>
+{% endblock %} 
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %} 

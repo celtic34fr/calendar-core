@@ -37,4 +37,21 @@ class CalendarRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * recherche des calendriers encore ouvert => sans date de clôture
+     *
+     * @return void
+     */
+    public function findActiveCalendars()
+    {
+        $calendars = $this->createQueryBuilder('c')
+            ->andWhere('c.closed_at is NULL')
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+        if ($calendars) return $calendars;
+        return false;
+    }
 }
